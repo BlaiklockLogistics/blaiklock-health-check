@@ -508,19 +508,23 @@
     var pillars = C.pillars.map(function (p) {
       var got = 0, max = 0, weak = [];
       p.questions.forEach(function (q) {
-        var best = Math.max.apply(null, q.options.map(function (o) { return o.score; }));
+        var scores = q.options.map(function (o) { return o.score; });
+        var best = Math.max.apply(null, scores), worst = Math.min.apply(null, scores);
         var opt = q.options[state.answers[q.id]];
         max += best;
         if (opt) {
           got += opt.score;
-          if (opt.score <= 1 && q.improve) weak.push({ q: q, opt: opt });
+          // The weaker half of the answers earns a "quick win" tip.
+          if (opt.score <= (best + worst) / 2 && q.improve) weak.push({ q: q, opt: opt });
         }
       });
       weak.sort(function (a, b) { return a.opt.score - b.opt.score; });
       var score = max ? Math.round((got / max) * 100) : 0;
       return { pillar: p, got: got, max: max, score: score, level: levelFor(score), weak: weak };
     });
-    var overall = Math.round(pillars.reduce(function (sum, r) { return sum + r.score; }, 0) / pillars.length);
+    var totalGot = pillars.reduce(function (sum, r) { return sum + r.got; }, 0);
+    var totalMax = pillars.reduce(function (sum, r) { return sum + r.max; }, 0);
+    var overall = totalMax ? Math.round((totalGot / totalMax) * 100) : 0;
     return { pillars: pillars, overall: overall, level: levelFor(overall) };
   }
 
@@ -574,6 +578,7 @@
     var gaps = sorted.slice(-2).reverse();
 
     var view = h("div", { class: "results" },
+      h("img", { class: "print-logo", src: "assets/img/blaiklock-logo-full.jpg", alt: C.brand.name }),
       heroCard(results),
       state.submitted ? thanksBanner() : null,
       h("div", { class: "split" },
@@ -657,7 +662,7 @@
           pillarIcon(r.pillar),
           h("span", { class: "mini-list__name" }, r.pillar.name),
           chip(r.level),
-          h("span", { class: "mini-list__score" }, r.score + "%"));
+          h("span", { class: "mini-list__score" }, r.got + "/" + r.max));
       })));
   }
 
@@ -676,7 +681,7 @@
       var head = h("button", {
           class: "pillar-row__head", type: "button", "aria-expanded": open ? "true" : "false", "aria-controls": bodyId,
           "data-tip-title": r.pillar.name,
-          "data-tip": r.score + "% · " + r.level.label + " · " + r.got + " of " + r.max + " points",
+          "data-tip": r.got + " of " + r.max + " points (" + r.score + "%) · " + r.level.label,
           onclick: function () {
             var isOpen = row.getAttribute("data-open") === "true";
             row.setAttribute("data-open", isOpen ? "false" : "true");
@@ -688,7 +693,7 @@
           C.levels.slice(1).map(function (l) { return h("span", { class: "bar__tick", style: "left:" + l.min + "%" }); }),
           h("span", { class: "bar__fill", "data-width": r.score }),
           h("span", { class: "bar__tick bar__tick--avg", style: "left:" + results.overall + "%" })),
-        h("span", { class: "pillar-row__score" }, r.score + "%"),
+        h("span", { class: "pillar-row__score" }, r.got + "/" + r.max),
         chip(r.level),
         h("span", { class: "chevron", "aria-hidden": "true" }, "▾"));
 

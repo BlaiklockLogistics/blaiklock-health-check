@@ -9,12 +9,12 @@
  *   - the tailored advice shown on the results page
  *   - the "deeper review" question and contact steps
  *
- * Scoring: every answer option has a `score` from 0 (weakest) to 3 (strongest).
- * A section's score is the % of the maximum available in that section, and the
- * overall score is the average of the section scores.
+ * Scoring: every answer option has a `score` from 1 (weakest) to 4 (strongest),
+ * so each two-question section is out of 8. The overall score is total points
+ * as a percentage of the maximum (40 points = 100).
  *
  * Per-question `improve` text is shown on the results page as a "quick win"
- * whenever the respondent picks an answer scoring 0 or 1 on that question.
+ * whenever the respondent picks one of the two weakest answers (1 or 2 points).
  */
 window.HEALTH_CHECK_CONFIG = {
   brand: {
@@ -22,7 +22,7 @@ window.HEALTH_CHECK_CONFIG = {
     title: "Supply Chain Resilience Check",
     tagline: "10 questions. Around 3 minutes. Instant results.",
     logo: "assets/img/blaiklock-logo.png",
-    email: "info@blaiklock.com",
+    email: "info@blaiklock.uk.com",
   },
 
   // Where the "deeper review" contact details are sent.
@@ -32,7 +32,7 @@ window.HEALTH_CHECK_CONFIG = {
   //   Leave endpoint empty to fall back to opening an email to `fallbackEmail`.
   submission: {
     endpoint: "",
-    fallbackEmail: "info@blaiklock.com",
+    fallbackEmail: "info@blaiklock.uk.com",
   },
 
   // Score bands, lowest first. `status` controls colour: critical | serious | warning | good
@@ -70,10 +70,10 @@ window.HEALTH_CHECK_CONFIG = {
           id: "q1",
           text: "If a critical shipment was delayed today, how quickly would you know?",
           options: [
-            { label: "Almost immediately", score: 3 },
-            { label: "Within a few hours", score: 2 },
-            { label: "Usually once our team or logistics provider flags it", score: 1 },
-            { label: "Sometimes only after the delay has started affecting the operation", score: 0 },
+            { label: "Almost immediately", score: 4 },
+            { label: "Within a few hours", score: 3 },
+            { label: "Usually once our team or logistics provider flags it", score: 2 },
+            { label: "Sometimes only after the delay has started affecting the operation", score: 1 },
           ],
           improve: "Agree exception alerts with your logistics partner so a delay on a critical shipment is flagged the same day it happens — not once it has started affecting your operation.",
         },
@@ -81,10 +81,10 @@ window.HEALTH_CHECK_CONFIG = {
           id: "q2",
           text: "How confident are you that you have accurate, up-to-date information across your most important shipments?",
           options: [
-            { label: "Very confident - we have clear visibility across critical movements", score: 3 },
-            { label: "Mostly confident - information is usually available when we need it", score: 2 },
-            { label: "It varies depending on the route, provider or shipment", score: 1 },
-            { label: "We regularly need to chase for updates", score: 0 },
+            { label: "Very confident - we have clear visibility across critical movements", score: 4 },
+            { label: "Mostly confident - information is usually available when we need it", score: 3 },
+            { label: "It varies depending on the route, provider or shipment", score: 2 },
+            { label: "We regularly need to chase for updates", score: 1 },
           ],
           improve: "Identify your most critical shipments and agree a standard set of milestone updates for them (booked, departed, arrived, cleared, delivered), so accurate information is in one place without chasing.",
         },
@@ -135,10 +135,10 @@ window.HEALTH_CHECK_CONFIG = {
           id: "q3",
           text: "If one of your main routes became unavailable tomorrow, how prepared would you be to switch to an alternative?",
           options: [
-            { label: "Very prepared - alternative routes or options are already identified", score: 3 },
-            { label: "Fairly prepared - we know what alternatives are available but would need to arrange them", score: 2 },
-            { label: "We would rely on our logistics partner to find the best alternative", score: 1 },
-            { label: "We would mainly respond once the disruption happened", score: 0 },
+            { label: "Very prepared - alternative routes or options are already identified", score: 4 },
+            { label: "Fairly prepared - we know what alternatives are available but would need to arrange them", score: 3 },
+            { label: "We would rely on our logistics partner to find the best alternative", score: 2 },
+            { label: "We would mainly respond once the disruption happened", score: 1 },
           ],
           improve: "For each of your main routes, identify — and get quoted — at least one alternative route or mode now, so switching is a decision rather than a scramble.",
         },
@@ -146,10 +146,10 @@ window.HEALTH_CHECK_CONFIG = {
           id: "q4",
           text: "How often do you review alternative routes, carriers or transport options for your critical movements?",
           options: [
-            { label: "Regularly, as part of our supply chain planning", score: 3 },
-            { label: "Occasionally, particularly for higher-risk movements", score: 2 },
-            { label: "Mainly when circumstances or market conditions change", score: 1 },
-            { label: "We generally review alternatives only when a problem occurs", score: 0 },
+            { label: "Regularly, as part of our supply chain planning", score: 4 },
+            { label: "Occasionally, particularly for higher-risk movements", score: 3 },
+            { label: "Mainly when circumstances or market conditions change", score: 2 },
+            { label: "We generally review alternatives only when a problem occurs", score: 1 },
           ],
           improve: "Build a review of alternative routes and carriers into your regular planning — for example quarterly and before peak season — rather than waiting for a problem.",
         },
@@ -200,10 +200,10 @@ window.HEALTH_CHECK_CONFIG = {
           id: "q5",
           text: "If a customs or regulatory requirement changed next month, how confident are you that your business could respond without disrupting shipments?",
           options: [
-            { label: "Very confident - responsibilities and processes are clearly defined", score: 3 },
-            { label: "Fairly confident - some adjustments may be needed", score: 2 },
-            { label: "We would need external support to understand and implement the change", score: 1 },
-            { label: "We would largely respond once the impact became clear", score: 0 },
+            { label: "Very confident - responsibilities and processes are clearly defined", score: 4 },
+            { label: "Fairly confident - some adjustments may be needed", score: 3 },
+            { label: "We would need external support to understand and implement the change", score: 2 },
+            { label: "We would largely respond once the impact became clear", score: 1 },
           ],
           improve: "Give one person clear ownership for monitoring customs and regulatory changes, and agree with your customs broker how you'll be warned about changes that affect your goods.",
         },
@@ -211,10 +211,10 @@ window.HEALTH_CHECK_CONFIG = {
           id: "q6",
           text: "How clearly are customs responsibilities, documentation and classifications managed across your supply chain?",
           options: [
-            { label: "Very clearly - ownership and processes are well defined", score: 3 },
-            { label: "Mostly clearly - responsibilities are understood in most situations", score: 2 },
-            { label: "It can become unclear when shipments or requirements are more complex", score: 1 },
-            { label: "We regularly experience uncertainty, delays or duplicated work", score: 0 },
+            { label: "Very clearly - ownership and processes are well defined", score: 4 },
+            { label: "Mostly clearly - responsibilities are understood in most situations", score: 3 },
+            { label: "It can become unclear when shipments or requirements are more complex", score: 2 },
+            { label: "We regularly experience uncertainty, delays or duplicated work", score: 1 },
           ],
           improve: "Write down who owns each customs task — classification, documentation, declarations — between you, your suppliers and your forwarder, and have your commodity codes reviewed by a specialist.",
         },
@@ -265,10 +265,10 @@ window.HEALTH_CHECK_CONFIG = {
           id: "q7",
           text: "How dependent are your critical shipments on a single route, carrier or mode of transport?",
           options: [
-            { label: "Very little - we have several viable alternatives", score: 3 },
-            { label: "Somewhat - alternatives exist for most critical movements", score: 2 },
-            { label: "Quite heavily - some key movements rely on a limited number of options", score: 1 },
-            { label: "Very heavily - changing route, provider or mode would be difficult", score: 0 },
+            { label: "Very little - we have several viable alternatives", score: 4 },
+            { label: "Somewhat - alternatives exist for most critical movements", score: 3 },
+            { label: "Quite heavily - some key movements rely on a limited number of options", score: 2 },
+            { label: "Very heavily - changing route, provider or mode would be difficult", score: 1 },
           ],
           improve: "Reduce reliance on a single route, carrier or mode for critical shipments by pre-agreeing a second option — for example sea-air, road vs short-sea, or an alternative port.",
         },
@@ -276,10 +276,10 @@ window.HEALTH_CHECK_CONFIG = {
           id: "q8",
           text: "When priorities change unexpectedly, how quickly can your logistics operation adapt?",
           options: [
-            { label: "Usually within the same day", score: 3 },
-            { label: "Usually within 1–2 days", score: 2 },
-            { label: "It often takes several days", score: 1 },
-            { label: "Significant changes are difficult to implement quickly", score: 0 },
+            { label: "Usually within the same day", score: 4 },
+            { label: "Usually within 1–2 days", score: 3 },
+            { label: "It often takes several days", score: 2 },
+            { label: "Significant changes are difficult to implement quickly", score: 1 },
           ],
           improve: "Agree escalation contacts and trigger points with your logistics partner in advance (e.g. when to switch priority stock to air), so changes can be made within a day.",
         },
@@ -330,10 +330,10 @@ window.HEALTH_CHECK_CONFIG = {
           id: "q9",
           text: "When something goes wrong, how clear is it who is responsible for resolving it?",
           options: [
-            { label: "Completely clear - ownership is established immediately", score: 3 },
-            { label: "Usually clear - the right person is normally easy to identify", score: 2 },
-            { label: "It can take time to establish who is responsible", score: 1 },
-            { label: "Ownership can become unclear between different teams or providers", score: 0 },
+            { label: "Completely clear - ownership is established immediately", score: 4 },
+            { label: "Usually clear - the right person is normally easy to identify", score: 3 },
+            { label: "It can take time to establish who is responsible", score: 2 },
+            { label: "Ownership can become unclear between different teams or providers", score: 1 },
           ],
           improve: "Agree who owns each type of issue — delays, customs holds, damages, claims — internally and with your providers, and write it down so nobody has to work it out mid-crisis.",
         },
@@ -341,10 +341,10 @@ window.HEALTH_CHECK_CONFIG = {
           id: "q10",
           text: "How often do you receive updates before you need to ask for them?",
           options: [
-            { label: "Consistently - we are usually kept informed proactively", score: 3 },
-            { label: "Most of the time", score: 2 },
-            { label: "Sometimes, depending on the shipment or situation", score: 1 },
-            { label: "We usually need to request updates ourselves", score: 0 },
+            { label: "Consistently - we are usually kept informed proactively", score: 4 },
+            { label: "Most of the time", score: 3 },
+            { label: "Sometimes, depending on the shipment or situation", score: 2 },
+            { label: "We usually need to request updates ourselves", score: 1 },
           ],
           improve: "Agree a proactive update standard with your logistics partner: key milestones and any exceptions sent to you automatically, without you having to ask.",
         },

@@ -26,7 +26,8 @@ It's a static site (HTML, CSS and JavaScript only), so there's no build step and
 | `assets/config.js` | **All content**: questions, answer scores, levels, advice, contact steps, where submissions go |
 | `assets/app.js` | Flow, scoring and rendering (you shouldn't need to edit this) |
 | `assets/styles.css` | Styling. Brand colours are the `--brand`, `--accent` and `--grad-*` variables at the top |
-| `assets/img/blaiklock-logo.png` | Logo, taken from the Jotform. Replace it with a higher-resolution file for a sharper result |
+| `assets/img/blaiklock-logo.png` | The "B" mark used in the header and browser tab |
+| `assets/img/blaiklock-logo-full.jpg` | Full logo with wordmark, shown at the top of the printed / PDF report |
 
 ## Run it locally
 
@@ -39,13 +40,13 @@ python3 -m http.server 8000
 
 Everything is in `assets/config.js`:
 
-- **`pillars`**: the five areas. Each question's answers go from strongest to weakest, scoring 3, 2, 1, 0. Each question also has an `improve` tip that appears as a "quick win" when someone picks one of the two weakest answers.
+- **`pillars`**: the five areas. Each question's answers go from strongest to weakest, scoring 4, 3, 2, 1, so each area is out of 8. Each question also has an `improve` tip that appears as a "quick win" when someone picks one of the two weakest answers (1 or 2 points).
 - **`pillars[].advice`**: a summary and next steps for each level (`vulnerable`, `reactive`, `proactive`, `resilient`).
 - **`pillars[].blaiklockHelp`**: the "How Blaiklock can help" note for each area.
 - **`levels`**: score bands and the headline and description shown for each.
 - **`deepDive`**: the "deeper review?" question, contact steps, and thank-you text.
 
-Scoring: each area's score is the percentage of its maximum points (6). The overall score is the average of the five area scores.
+Scoring: each area is scored out of 8 (two questions, 1–4 points each). The overall score is total points out of 40, shown out of 100, so the lowest possible score is 25/100. Levels: Vulnerable below 40, Reactive 40+, Proactive 60+, Resilient 80+.
 
 ## Receiving the "deeper review" submissions
 
