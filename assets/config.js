@@ -23,6 +23,7 @@ window.HEALTH_CHECK_CONFIG = {
     tagline: "10 questions. Around 3 minutes. Instant results.",
     logo: "assets/img/blaiklock-logo.png",
     email: "info@blaiklock.uk.com",
+    privacyUrl: "privacy.html",
   },
 
   // Where the "deeper review" contact details are sent. Currently a Formspree
@@ -425,7 +426,10 @@ window.HEALTH_CHECK_CONFIG = {
         options: ["UK only", "UK & Europe", "International"],
       },
     ],
-    privacyNote: "By submitting, you agree to Blaiklock contacting you about your results.",
+    // Shown on the last contact step. The opt-in box is optional and unticked by default.
+    marketingOptIn: "Keep me updated with occasional supply chain news and insights from Blaiklock. You can unsubscribe at any time.",
+    privacyNote: "We'll only use your details to respond to your review request.",
+    privacyLinkText: "Read our privacy notice",
     thankYou: "Thanks{name} — a Blaiklock specialist will review your results and be in touch shortly.",
     // Shown on the results page to people who chose "No thanks".
     ctaHeading: "Would you like a deeper review?",

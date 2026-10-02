@@ -28,6 +28,9 @@ It's a static site (HTML, CSS and JavaScript only), so there's no build step and
 | `assets/styles.css` | Styling. Brand colours are the `--brand`, `--accent` and `--grad-*` variables at the top |
 | `assets/img/blaiklock-logo.png` | The "B" mark used in the header and browser tab |
 | `assets/img/blaiklock-logo-full.jpg` | Full logo with wordmark, shown at the top of the printed / PDF report |
+| `assets/fonts/` | Self-hosted Montserrat font and its licence |
+| `privacy.html` | Privacy notice. Fill in the highlighted gaps before going live |
+| `GDPR-CHECKLIST.md` | What's built in for data protection, and what Blaiklock needs to confirm |
 
 ## Run it locally
 
@@ -62,7 +65,7 @@ The payload contains the contact details, the area they want looked at, where th
 
 If `endpoint` is left empty, submitting opens the respondent's email app with a pre-filled email to `submission.fallbackEmail`. That's fine for testing, but set up an endpoint before going live.
 
-Contact details are never saved in the browser; only the quiz answers are, so a refresh doesn't lose progress.
+Contact details are never saved in the browser. Quiz answers are kept in session storage (cleared when the tab closes) so a refresh doesn't lose progress. See `GDPR-CHECKLIST.md`.
 
 ## Hosting
 

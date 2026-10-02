@@ -47,7 +47,7 @@
 
   function loadState() {
     try {
-      var s = JSON.parse(localStorage.getItem(STORAGE_KEY));
+      var s = JSON.parse(sessionStorage.getItem(STORAGE_KEY));
       if (!s || typeof s !== "object") return null;
       s.answers = s.answers || {};
       // Drop answers that no longer fit the current config (questions edited since).
@@ -67,7 +67,7 @@
   }
 
   function saveState() {
-    try { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); } catch (e) { /* storage unavailable */ }
+    try { sessionStorage.setItem(STORAGE_KEY, JSON.stringify(state)); } catch (e) { /* storage unavailable */ }
   }
 
   var state = loadState() || freshState();
@@ -181,7 +181,7 @@
                 h("button", { class: "btn btn--ghost", type: "button", onclick: restart }, "Start again"),
               ]
             : h("button", { class: "btn btn--primary", type: "button", onclick: function () { go("steps", 0); } }, "Start →")),
-        resume ? h("p", { class: "resume-note" }, "We've saved your progress on this device.") : null),
+        resume ? h("p", { class: "resume-note" }, "We've kept your progress for this visit.") : null),
       h("aside", { class: "card intro__panel" },
         h("h2", null, "What we'll look at"),
         h("ul", { class: "pillar-list" }, C.pillars.map(function (p, i) {
@@ -213,9 +213,9 @@
           "aria-checked": selected === i ? "true" : "false",
           onclick: function () { onPick(i); },
         },
-        h("span", { class: "option__key", "aria-hidden": "true" }, LETTERS[i]),
         h("span", { class: "option__label" }, label),
-        badges && badges[i] ? h("span", { class: "option__badge" }, badges[i]) : null);
+        badges && badges[i] ? h("span", { class: "option__badge" }, badges[i]) : null,
+        h("span", { class: "option__check", "aria-hidden": "true" }));
       }));
   }
 
@@ -238,7 +238,7 @@
         optionList(q.options.map(function (o) { return o.label; }), selected, choose, "q-title"),
         navRow({
           back: true,
-          hint: "Tip: press A–" + LETTERS[q.options.length - 1] + " to answer",
+          hint: "Tip: press 1–" + q.options.length + " to answer",
           next: { label: "Next →", disabled: selected === undefined, onclick: next },
         }))), "#q-title");
   }
@@ -251,7 +251,7 @@
         h("h2", { class: "q-title", id: "q-title" }, D.question),
         h("p", { class: "gate__sub" }, D.subtitle),
         optionList([D.yes, D.no], picked, chooseGate, "q-title"),
-        navRow({ back: true, hint: "Tip: press A or B to answer" }))), "#q-title");
+        navRow({ back: true, hint: "Tip: press 1 or 2 to answer" }))), "#q-title");
   }
 
   function renderContact(step, anim) {
@@ -285,7 +285,7 @@
       def.hint ? h("p", { class: "step-hint" }, def.hint) : null,
       body,
       h("p", { class: "step-error", id: "step-error", "aria-live": "polite" }),
-      isLast && D.privacyNote ? h("p", { class: "privacy" }, D.privacyNote) : null,
+      isLast ? privacyBlock() : null,
       navRow({
         back: true,
         status: true,
@@ -293,6 +293,20 @@
       }));
 
     mount(h("section", { class: "stage " + anim }, form), def.fields ? "#f-" + def.fields[0].name : "#q-title");
+  }
+
+  function privacyBlock() {
+    return h("div", { class: "privacy" },
+      D.marketingOptIn
+        ? h("label", { class: "check" },
+            h("input", {
+              type: "checkbox", checked: contact.marketing === true,
+              onchange: function (e) { contact.marketing = e.target.checked; },
+            }),
+            h("span", null, D.marketingOptIn))
+        : null,
+      h("p", null, D.privacyNote, " ",
+        h("a", { href: C.brand.privacyUrl, target: "_blank", rel: "noopener" }, D.privacyLinkText), "."));
   }
 
   function navRow(opts) {
@@ -466,6 +480,7 @@
       "Phone": contact.phone || "",
       "Area to look at": contactChoice("focus"),
       "Supply chain operates": contactChoice("region"),
+      "Marketing emails": contact.marketing ? "Yes - opted in" : "No",
       "Overall score": results.overall + "/100 (" + results.level.label + ")",
     };
     results.pillars.forEach(function (r) {
