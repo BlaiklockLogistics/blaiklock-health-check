@@ -1,12 +1,13 @@
 /*
- * Blaiklock Supply Chain Health Check — content & scoring configuration
- * ----------------------------------------------------------------------
+ * Blaiklock Supply Chain Resilience Check — content & scoring configuration
+ * -------------------------------------------------------------------------
  * Everything a non-developer may want to change lives in this file:
  *   - brand details and contact info
- *   - where the "deeper dive" contact form is sent
+ *   - where the "deeper review" contact details are sent
  *   - the maturity levels (score bands)
  *   - the sections ("pillars"), their questions, answer options and scores
  *   - the tailored advice shown on the results page
+ *   - the "deeper review" question and contact steps
  *
  * Scoring: every answer option has a `score` from 0 (weakest) to 3 (strongest).
  * A section's score is the % of the maximum available in that section, and the
@@ -18,17 +19,16 @@
 window.HEALTH_CHECK_CONFIG = {
   brand: {
     name: "Blaiklock",
-    fullName: "Blaiklock International Logistics",
-    title: "Supply Chain Health Check",
-    website: "https://www.blaiklock.com",
+    title: "Supply Chain Resilience Check",
+    tagline: "10 questions. Around 3 minutes. Instant results.",
+    logo: "assets/img/blaiklock-logo.png",
     email: "info@blaiklock.com",
-    phone: "",
   },
 
-  // Where the "deeper dive" contact form is sent.
-  //   endpoint: a URL that accepts a POST (Formspree, Zapier/Make webhook,
-  //             Power Automate HTTP trigger, your CRM, etc.). The payload is JSON
-  //             containing the contact details, every answer and every score.
+  // Where the "deeper review" contact details are sent.
+  //   endpoint: a URL that accepts a JSON POST (Formspree, Zapier/Make webhook,
+  //             Power Automate HTTP trigger, your CRM, etc.). The payload holds
+  //             the contact details, every answer and every score.
   //   Leave endpoint empty to fall back to opening an email to `fallbackEmail`.
   submission: {
     endpoint: "",
@@ -40,38 +40,22 @@ window.HEALTH_CHECK_CONFIG = {
     {
       key: "vulnerable", label: "Vulnerable", min: 0, status: "critical", icon: "!",
       headline: "Your supply chain is exposed to disruption.",
-      description: "Key parts of your supply chain rely on manual effort, single points of failure or reactive fixes. A disruption — a port delay, a customs hold, a supplier failure — is likely to hit your customers and your margins. The good news: the biggest gains are quick to unlock from here.",
+      description: "Key parts of your supply chain rely on reacting after problems appear. A delay, a route closure or a regulatory change is likely to reach your operation and your customers before you can respond. The good news: the biggest gains are quick to unlock from here.",
     },
     {
       key: "reactive", label: "Reactive", min: 40, status: "serious", icon: "▲",
       headline: "You cope with disruption, but mostly after it happens.",
-      description: "You have some good foundations in place, but problems are usually spotted late and fixed by firefighting. Building more visibility and contingency into how you plan and move goods will reduce cost and stress.",
+      description: "You have some good foundations in place, but issues are often spotted late and handled by firefighting. Greater visibility, clearer ownership and stronger contingency planning would reduce both cost and pressure on your team.",
     },
     {
       key: "proactive", label: "Proactive", min: 60, status: "warning", icon: "●",
-      headline: "You're well organised, with some gaps to close.",
-      description: "Your supply chain is in good shape and you anticipate many issues before they land. Closing the remaining gaps will turn your logistics into a genuine competitive advantage.",
+      headline: "You're well prepared, with some gaps to close.",
+      description: "Your supply chain is in good shape and you anticipate many issues before they land. Closing the remaining gaps will help you respond faster and more confidently when conditions change.",
     },
     {
       key: "resilient", label: "Resilient", min: 80, status: "good", icon: "✓",
       headline: "Your supply chain is resilient and well run.",
-      description: "You have strong visibility, robust compliance and real flexibility in how you move goods. The focus now is on continuous improvement, optimising cost and staying ahead of regulatory and market change.",
-    },
-  ],
-
-  // Optional, unscored "about you" questions asked before the scored sections.
-  profile: [
-    {
-      id: "industry", text: "Which best describes your business?",
-      options: ["Manufacturing", "Retail & e-commerce", "Wholesale & distribution", "Food & drink", "Healthcare & pharma", "Other"],
-    },
-    {
-      id: "trade", text: "How does your business trade internationally?",
-      options: ["Mostly importing", "Mostly exporting", "Both importing and exporting", "Planning to start trading internationally"],
-    },
-    {
-      id: "volume", text: "Roughly how many international shipments do you move each month?",
-      options: ["Fewer than 5", "5 – 20", "21 – 100", "More than 100"],
+      description: "You have strong visibility, clear ownership and real flexibility in how you move goods. The focus now is on keeping it that way as routes, regulations, suppliers and customer demands evolve.",
     },
   ],
 
@@ -80,468 +64,371 @@ window.HEALTH_CHECK_CONFIG = {
       id: "visibility",
       name: "Visibility & Tracking",
       icon: "◎",
-      intro: "How well you can see where your goods are, and how early you hear about problems.",
+      intro: "How quickly you know what's happening to your shipments, and how reliable that information is.",
       questions: [
         {
-          id: "vis1",
-          text: "How do you know where your shipments are at any given moment?",
+          id: "q1",
+          text: "If a critical shipment was delayed today, how quickly would you know?",
           options: [
-            { label: "We usually find out when they arrive (or don't)", score: 0 },
-            { label: "We chase our forwarder or carrier by phone / email", score: 1 },
-            { label: "We get regular milestone updates from our forwarder", score: 2 },
-            { label: "We have live, proactive tracking across all shipments", score: 3 },
+            { label: "Almost immediately", score: 3 },
+            { label: "Within a few hours", score: 2 },
+            { label: "Usually once our team or logistics provider flags it", score: 1 },
+            { label: "Sometimes only after the delay has started affecting the operation", score: 0 },
           ],
-          improve: "Ask your forwarder for proactive milestone updates (booked, departed, arrived, cleared, delivered) on every shipment, so you stop chasing and start planning.",
+          improve: "Agree exception alerts with your logistics partner so a delay on a critical shipment is flagged the same day it happens — not once it has started affecting your operation.",
         },
         {
-          id: "vis2",
-          text: "When a shipment is delayed, when do you typically find out?",
+          id: "q2",
+          text: "How confident are you that you have accurate, up-to-date information across your most important shipments?",
           options: [
-            { label: "When the customer complains or stock runs out", score: 0 },
-            { label: "On or after the expected delivery date", score: 1 },
-            { label: "A few days before it affects us", score: 2 },
-            { label: "As soon as the risk appears, with options to react", score: 3 },
+            { label: "Very confident - we have clear visibility across critical movements", score: 3 },
+            { label: "Mostly confident - information is usually available when we need it", score: 2 },
+            { label: "It varies depending on the route, provider or shipment", score: 1 },
+            { label: "We regularly need to chase for updates", score: 0 },
           ],
-          improve: "Agree exception alerts with your logistics partner: you should be told about a rollover, missed connection or customs hold the same day it happens, not when the goods fail to arrive.",
-        },
-        {
-          id: "vis3",
-          text: "How confident are you in your landed cost per shipment (freight, duty, VAT, local charges)?",
-          options: [
-            { label: "We don't really know until invoices arrive", score: 0 },
-            { label: "We have a rough idea but are often surprised", score: 1 },
-            { label: "We estimate it accurately most of the time", score: 2 },
-            { label: "We know it up front and track it against actuals", score: 3 },
-          ],
-          improve: "Build a simple landed-cost template (freight + duty + VAT + port/handling + delivery) and get all-in quotes up front, so pricing and margin decisions are made on real numbers.",
+          improve: "Identify your most critical shipments and agree a standard set of milestone updates for them (booked, departed, arrived, cleared, delivered), so accurate information is in one place without chasing.",
         },
       ],
       advice: {
         vulnerable: {
-          summary: "You're largely operating blind once goods leave your supplier.",
+          summary: "You're often finding out about problems after they've already hit.",
           actions: [
-            "Get milestone tracking in place for every shipment — even a shared spreadsheet updated by your forwarder is a step change.",
-            "Name one person responsible for monitoring inbound and outbound shipments each day.",
+            "List your most critical shipments and agree milestone updates for each one with your provider.",
+            "Name one person responsible for monitoring critical movements each day.",
             "Start recording expected vs actual arrival dates so you can see your real lead times.",
           ],
         },
         reactive: {
-          summary: "You can find out what's happening, but it takes effort and comes late.",
+          summary: "You can get the information you need, but it takes effort and often comes late.",
           actions: [
-            "Move from chasing updates to receiving them: agree a standard update schedule with your forwarder.",
+            "Move from chasing updates to receiving them: agree a standard update schedule with your provider.",
             "Set up exception alerts for delays, rollovers and customs holds.",
-            "Review late shipments monthly to spot repeat offenders (routes, carriers, suppliers).",
+            "Review late shipments monthly to spot repeat issues by route, carrier or supplier.",
           ],
         },
         proactive: {
           summary: "You have good visibility and usually hear about issues in time.",
           actions: [
             "Link shipment ETAs to your stock and sales plans so delays automatically flag at-risk orders.",
-            "Track carrier and route reliability to inform future bookings.",
+            "Make sure visibility is consistent across every route and provider, not just the main ones.",
             "Share tracking with your own customers to reduce \"where's my order\" enquiries.",
           ],
         },
         resilient: {
           summary: "Visibility is a strength — you see issues early and act on them.",
           actions: [
-            "Use your historical tracking data to negotiate better service levels.",
-            "Explore predictive ETAs and scenario planning for peak seasons.",
+            "Use your tracking history to measure carrier and route reliability.",
+            "Explore predictive ETAs and scenario planning for peak periods.",
           ],
         },
       },
-      blaiklockHelp: "Blaiklock provides proactive milestone updates and a dedicated point of contact who flags problems early — so you hear about delays before your customers do.",
+      blaiklockHelp: "Blaiklock can set up proactive milestone updates for your critical shipments, so you hear about delays early instead of chasing for them.",
+    },
+
+    {
+      id: "contingency",
+      name: "Contingency Planning",
+      icon: "⇄",
+      intro: "How prepared you are to switch to an alternative when a main route or option becomes unavailable.",
+      questions: [
+        {
+          id: "q3",
+          text: "If one of your main routes became unavailable tomorrow, how prepared would you be to switch to an alternative?",
+          options: [
+            { label: "Very prepared - alternative routes or options are already identified", score: 3 },
+            { label: "Fairly prepared - we know what alternatives are available but would need to arrange them", score: 2 },
+            { label: "We would rely on our logistics partner to find the best alternative", score: 1 },
+            { label: "We would mainly respond once the disruption happened", score: 0 },
+          ],
+          improve: "For each of your main routes, identify — and get quoted — at least one alternative route or mode now, so switching is a decision rather than a scramble.",
+        },
+        {
+          id: "q4",
+          text: "How often do you review alternative routes, carriers or transport options for your critical movements?",
+          options: [
+            { label: "Regularly, as part of our supply chain planning", score: 3 },
+            { label: "Occasionally, particularly for higher-risk movements", score: 2 },
+            { label: "Mainly when circumstances or market conditions change", score: 1 },
+            { label: "We generally review alternatives only when a problem occurs", score: 0 },
+          ],
+          improve: "Build a review of alternative routes and carriers into your regular planning — for example quarterly and before peak season — rather than waiting for a problem.",
+        },
+      ],
+      advice: {
+        vulnerable: {
+          summary: "Without alternatives lined up, a single disruption could stop critical movements.",
+          actions: [
+            "List your critical movements and the single route, port or carrier each one depends on.",
+            "Get at least one alternative quoted for the most important of them.",
+            "Write a one-page disruption playbook: who decides, what gets priority, who tells customers.",
+          ],
+        },
+        reactive: {
+          summary: "You'd find a way through disruption, but probably at a higher cost and with delays.",
+          actions: [
+            "Turn your informal knowledge of alternatives into a short written plan.",
+            "Pre-agree backup options for your highest-value routes with your logistics partner.",
+            "Schedule a regular review of alternatives instead of waiting for a trigger.",
+          ],
+        },
+        proactive: {
+          summary: "You know your alternatives and review them for higher-risk movements.",
+          actions: [
+            "Test a backup route with a trial shipment so it's proven, not theoretical.",
+            "Extend your reviews to all critical movements, not just the riskiest.",
+            "Agree clear trigger points for switching, e.g. a delay of more than 7 days.",
+          ],
+        },
+        resilient: {
+          summary: "Contingency planning is built into how you run your supply chain.",
+          actions: [
+            "Run a scenario exercise, such as a major port closure, to stress-test the plan.",
+            "Keep your playbook up to date as routes, carriers and costs change.",
+          ],
+        },
+      },
+      blaiklockHelp: "Blaiklock can help map out and pre-agree alternative routes and transport options for your critical movements, so you're ready before disruption hits.",
     },
 
     {
       id: "customs",
       name: "Customs & Compliance",
       icon: "⚖",
-      intro: "How smoothly your goods clear borders, and how well you manage duty, documentation and regulation.",
+      intro: "How clearly customs responsibilities are owned, and how well you can respond to regulatory change.",
       questions: [
         {
-          id: "cus1",
-          text: "How often are your shipments held up by customs or documentation issues?",
+          id: "q5",
+          text: "If a customs or regulatory requirement changed next month, how confident are you that your business could respond without disrupting shipments?",
           options: [
-            { label: "Frequently — it's a regular headache", score: 0 },
-            { label: "Occasionally, and it's costly when it happens", score: 1 },
-            { label: "Rarely", score: 2 },
-            { label: "Almost never — our paperwork is right first time", score: 3 },
+            { label: "Very confident - responsibilities and processes are clearly defined", score: 3 },
+            { label: "Fairly confident - some adjustments may be needed", score: 2 },
+            { label: "We would need external support to understand and implement the change", score: 1 },
+            { label: "We would largely respond once the impact became clear", score: 0 },
           ],
-          improve: "Introduce a pre-shipment document check (commercial invoice, packing list, origin, commodity codes) before goods leave the supplier — most customs holds are caused by avoidable paperwork errors.",
+          improve: "Give one person clear ownership for monitoring customs and regulatory changes, and agree with your customs broker how you'll be warned about changes that affect your goods.",
         },
         {
-          id: "cus2",
-          text: "How confident are you that your commodity codes and duty rates are correct?",
+          id: "q6",
+          text: "How clearly are customs responsibilities, documentation and classifications managed across your supply chain?",
           options: [
-            { label: "Not confident / we've never checked", score: 0 },
-            { label: "We rely on suppliers or the forwarder and hope", score: 1 },
-            { label: "Fairly confident — they were checked at some point", score: 2 },
-            { label: "Very confident — reviewed regularly by a specialist", score: 3 },
+            { label: "Very clearly - ownership and processes are well defined", score: 3 },
+            { label: "Mostly clearly - responsibilities are understood in most situations", score: 2 },
+            { label: "It can become unclear when shipments or requirements are more complex", score: 1 },
+            { label: "We regularly experience uncertainty, delays or duplicated work", score: 0 },
           ],
-          improve: "Have your commodity codes reviewed by a customs specialist. Incorrect codes are one of the most common causes of overpaid duty — and of penalties from HMRC.",
-        },
-        {
-          id: "cus3",
-          text: "Are you making use of duty-saving opportunities (preferential origin, relief schemes, deferment)?",
-          options: [
-            { label: "I'm not sure what's available to us", score: 0 },
-            { label: "We know about them but don't use them", score: 1 },
-            { label: "We use some of them", score: 2 },
-            { label: "Yes — we've reviewed and use everything relevant", score: 3 },
-          ],
-          improve: "Ask for a duty and relief review: preferential origin under trade agreements, inward/outward processing, returned goods relief and a duty deferment account can all reduce cost and improve cash flow.",
+          improve: "Write down who owns each customs task — classification, documentation, declarations — between you, your suppliers and your forwarder, and have your commodity codes reviewed by a specialist.",
         },
       ],
       advice: {
         vulnerable: {
-          summary: "Customs is a significant source of delay, cost and compliance risk for you.",
+          summary: "Customs is likely to be a source of delay, cost and compliance risk.",
           actions: [
-            "Get a specialist to review your commodity codes and documentation — this is the single biggest quick win.",
+            "Get a customs specialist to review your commodity codes and documentation.",
             "Create a standard document checklist for every supplier and shipment.",
-            "Check you have the right registrations in place (EORI, and a duty deferment account if you import regularly).",
+            "Agree who is responsible for each customs task, internally and with your providers.",
           ],
         },
         reactive: {
-          summary: "Customs mostly works, but issues are dealt with as they arise.",
+          summary: "Customs mostly works, but complexity or change can cause problems.",
           actions: [
-            "Audit a sample of recent entries for code and valuation accuracy.",
-            "Review whether preferential origin could reduce duty on your key products.",
-            "Brief your suppliers on exactly what documentation you need from them.",
+            "Audit a sample of recent entries for classification and valuation accuracy.",
+            "Agree how your customs broker will alert you to regulatory changes.",
+            "Brief suppliers on exactly what documentation you need from them.",
           ],
         },
         proactive: {
-          summary: "Compliance is in good shape with room to unlock savings.",
+          summary: "Compliance is in good shape, with clear processes most of the time.",
           actions: [
-            "Schedule an annual tariff and relief review to catch regulatory changes.",
-            "Explore customs special procedures (e.g. warehousing, inward processing) where relevant.",
-            "Keep an eye on upcoming changes such as new border controls and carbon reporting (CBAM).",
+            "Schedule an annual tariff and classification review.",
+            "Check whether duty-saving options (preferential origin, reliefs, deferment) apply to you.",
+            "Keep an eye on upcoming changes to UK and EU border requirements.",
           ],
         },
         resilient: {
           summary: "Customs and compliance are well controlled.",
           actions: [
-            "Consider whether authorised status (e.g. AEO) would speed up your clearances further.",
-            "Use your compliance data to model duty impacts before changing suppliers or routes.",
+            "Consider whether authorised status (such as AEO) would speed up your clearances further.",
+            "Model the duty impact before changing suppliers or routes.",
           ],
         },
       },
-      blaiklockHelp: "Blaiklock's in-house customs team handles import and export clearance, checks classifications and can review your duty position for savings.",
+      blaiklockHelp: "Blaiklock's customs team can take ownership of clearance and documentation, check your classifications and keep you ahead of regulatory changes.",
     },
 
     {
-      id: "risk",
-      name: "Supplier & Route Resilience",
-      icon: "⛓",
-      intro: "How exposed you are to a single supplier, port, carrier or route failing.",
+      id: "flexibility",
+      name: "Transport Flexibility",
+      icon: "⛟",
+      intro: "How dependent you are on a single route, carrier or mode, and how quickly you can adapt.",
       questions: [
         {
-          id: "risk1",
-          text: "If your main supplier or main shipping route was disrupted tomorrow, what would happen?",
+          id: "q7",
+          text: "How dependent are your critical shipments on a single route, carrier or mode of transport?",
           options: [
-            { label: "We'd be stuck — there's no alternative", score: 0 },
-            { label: "We'd scramble to find an alternative", score: 1 },
-            { label: "We have alternatives identified but untested", score: 2 },
-            { label: "We have tested backup suppliers / routes ready to go", score: 3 },
+            { label: "Very little - we have several viable alternatives", score: 3 },
+            { label: "Somewhat - alternatives exist for most critical movements", score: 2 },
+            { label: "Quite heavily - some key movements rely on a limited number of options", score: 1 },
+            { label: "Very heavily - changing route, provider or mode would be difficult", score: 0 },
           ],
-          improve: "Identify at least one alternative supplier or route for your most critical products, and get it quoted now — not during a crisis.",
+          improve: "Reduce reliance on a single route, carrier or mode for critical shipments by pre-agreeing a second option — for example sea-air, road vs short-sea, or an alternative port.",
         },
         {
-          id: "risk2",
-          text: "How flexible are you in switching transport mode (sea, air, road, rail) when needed?",
+          id: "q8",
+          text: "When priorities change unexpectedly, how quickly can your logistics operation adapt?",
           options: [
-            { label: "We only ever use one mode and have no other options", score: 0 },
-            { label: "We've switched before but it was slow and expensive", score: 1 },
-            { label: "We can switch with a bit of notice", score: 2 },
-            { label: "We plan multi-modal options as standard", score: 3 },
+            { label: "Usually within the same day", score: 3 },
+            { label: "Usually within 1–2 days", score: 2 },
+            { label: "It often takes several days", score: 1 },
+            { label: "Significant changes are difficult to implement quickly", score: 0 },
           ],
-          improve: "Work with a forwarder that can offer sea, air, road and rail, and agree in advance when you'd switch (e.g. sea-air for urgent stock) so the decision is quick when it matters.",
-        },
-        {
-          id: "risk3",
-          text: "Do you have a documented plan for handling major disruption (strikes, port closures, geopolitical events)?",
-          options: [
-            { label: "No", score: 0 },
-            { label: "Informally — it's in people's heads", score: 1 },
-            { label: "Yes, but it's not reviewed regularly", score: 2 },
-            { label: "Yes, documented, owned and reviewed regularly", score: 3 },
-          ],
-          improve: "Write a one-page disruption playbook: who decides, which shipments get priority, which alternatives to activate and who tells customers.",
+          improve: "Agree escalation contacts and trigger points with your logistics partner in advance (e.g. when to switch priority stock to air), so changes can be made within a day.",
         },
       ],
       advice: {
         vulnerable: {
-          summary: "Single points of failure leave you highly exposed.",
+          summary: "Heavy reliance on limited options makes it hard to adapt when things change.",
           actions: [
-            "List your top 10 products and identify the single supplier, port or route each depends on.",
-            "Get quotes for at least one alternative for the most critical items.",
-            "Agree with your forwarder what a 'plan B' route looks like for your main lanes.",
+            "Identify which critical movements depend on a single route, carrier or mode.",
+            "Get quotes for a second option on the most important of them.",
+            "Agree an escalation contact with your provider for urgent changes.",
           ],
         },
         reactive: {
-          summary: "You'd find a way through disruption, but at a high cost.",
+          summary: "You can adapt, but it takes time and is usually expensive.",
           actions: [
-            "Turn your informal contingency knowledge into a short written playbook.",
-            "Pre-qualify a backup supplier or route for your highest-value lanes.",
-            "Agree trigger points for switching mode (e.g. sea delay > 7 days = air for priority stock).",
+            "Pre-agree alternative modes for priority stock (e.g. sea-air or road).",
+            "Spread volume across more than one carrier to keep options open.",
+            "Agree trigger points for switching mode so decisions are quick.",
           ],
         },
         proactive: {
-          summary: "You have alternatives in mind and can adapt with some notice.",
+          summary: "You have options for most critical movements and can adapt within a day or two.",
           actions: [
-            "Test your backup routes with a trial shipment so they're proven, not theoretical.",
-            "Review your disruption plan twice a year against current events.",
-            "Spread volume across carriers to keep options open.",
+            "Close the remaining single points of dependency.",
+            "Work with your partner on same-day escalation for urgent changes.",
+            "Model the cost trade-off between holding stock and faster modes.",
           ],
         },
         resilient: {
-          summary: "You're well protected against single points of failure.",
+          summary: "Your transport set-up is flexible and quick to adapt.",
           actions: [
-            "Run a scenario exercise (e.g. a major port closure) to stress-test the plan.",
-            "Consider nearshoring or dual sourcing for strategic products.",
+            "Review your options regularly as rates and capacity change.",
+            "Factor carbon emissions into mode choices alongside cost and speed.",
           ],
         },
       },
-      blaiklockHelp: "With sea, air, road and rail options and long-standing carrier relationships, Blaiklock can design and pre-agree backup routes for your key trade lanes.",
+      blaiklockHelp: "With air, sea and road options and relationships across airlines, shipping lines and hauliers, Blaiklock can give you alternatives ready to use when priorities change.",
     },
 
     {
-      id: "planning",
-      name: "Planning & Inventory",
-      icon: "▦",
-      intro: "How well your stock levels and order timing account for real-world lead times.",
+      id: "control",
+      name: "Operational Control",
+      icon: "◆",
+      intro: "How clear ownership is when things go wrong, and whether you're kept informed without asking.",
       questions: [
         {
-          id: "plan1",
-          text: "How do you set the lead times you plan your orders around?",
+          id: "q9",
+          text: "When something goes wrong, how clear is it who is responsible for resolving it?",
           options: [
-            { label: "We don't plan with lead times — we order when we run low", score: 0 },
-            { label: "We use the supplier's or carrier's quoted transit times", score: 1 },
-            { label: "We use our own experience with a buffer", score: 2 },
-            { label: "We use measured actual door-to-door lead times, reviewed regularly", score: 3 },
+            { label: "Completely clear - ownership is established immediately", score: 3 },
+            { label: "Usually clear - the right person is normally easy to identify", score: 2 },
+            { label: "It can take time to establish who is responsible", score: 1 },
+            { label: "Ownership can become unclear between different teams or providers", score: 0 },
           ],
-          improve: "Measure actual door-to-door lead times (order placed to goods in your warehouse) for your main lanes — quoted transit times typically leave out production, customs and delivery.",
+          improve: "Agree who owns each type of issue — delays, customs holds, damages, claims — internally and with your providers, and write it down so nobody has to work it out mid-crisis.",
         },
         {
-          id: "plan2",
-          text: "How often do you experience stock-outs or excess stock because of shipping delays?",
+          id: "q10",
+          text: "How often do you receive updates before you need to ask for them?",
           options: [
-            { label: "Very often", score: 0 },
-            { label: "Often during peak periods", score: 1 },
-            { label: "Occasionally", score: 2 },
-            { label: "Rarely", score: 3 },
+            { label: "Consistently - we are usually kept informed proactively", score: 3 },
+            { label: "Most of the time", score: 2 },
+            { label: "Sometimes, depending on the shipment or situation", score: 1 },
+            { label: "We usually need to request updates ourselves", score: 0 },
           ],
-          improve: "Set safety stock for your top sellers based on how variable your lead times are, not just their average — that's what protects you from delays.",
-        },
-        {
-          id: "plan3",
-          text: "How far ahead do you share forecasts with your suppliers and logistics partner?",
-          options: [
-            { label: "We don't share forecasts", score: 0 },
-            { label: "Only when placing orders", score: 1 },
-            { label: "A month or two ahead", score: 2 },
-            { label: "Rolling 3–6+ month forecasts, updated regularly", score: 3 },
-          ],
-          improve: "Share a simple rolling forecast with your forwarder ahead of peak season — it helps secure space and rates before capacity tightens.",
+          improve: "Agree a proactive update standard with your logistics partner: key milestones and any exceptions sent to you automatically, without you having to ask.",
         },
       ],
       advice: {
         vulnerable: {
-          summary: "Planning is reactive, so delays quickly turn into stock problems.",
+          summary: "Unclear ownership and having to chase updates slow down every problem.",
           actions: [
-            "Start tracking actual lead times for your main suppliers.",
-            "Identify your top 20% of products by revenue and protect them with safety stock.",
-            "Plan peak-season orders (e.g. Q4, Chinese New Year) earlier.",
+            "Agree a single point of contact with each of your logistics providers.",
+            "Write down who owns each type of issue, and share it with your providers.",
+            "Ask your providers for proactive updates rather than on request.",
           ],
         },
         reactive: {
-          summary: "You plan around lead times, but variability still catches you out.",
+          summary: "Problems get resolved, but working out who owns them costs time.",
           actions: [
-            "Replace quoted transit times with measured door-to-door times.",
-            "Review safety stock levels each quarter for your key lines.",
-            "Share forecasts with your forwarder so space can be secured ahead of time.",
+            "Agree clear escalation routes for delays, customs holds and claims.",
+            "Set expectations with your providers on how and when they update you.",
+            "Review recent issues to see where ownership was unclear.",
           ],
         },
         proactive: {
-          summary: "Planning is solid and well connected to logistics.",
+          summary: "Ownership is usually clear and you're mostly kept informed.",
           actions: [
-            "Link live shipment ETAs to your stock plan.",
-            "Consider consolidating orders to optimise container fill and freight cost.",
-            "Review slow-moving stock to free up working capital.",
+            "Make proactive updates consistent across all shipments and providers.",
+            "Hold a regular review with your logistics partner covering service and issues.",
+            "Agree shared KPIs, such as on-time delivery and issue resolution time.",
           ],
         },
         resilient: {
-          summary: "Your planning is mature and data-driven.",
+          summary: "You have clear ownership and proactive communication.",
           actions: [
-            "Explore collaborative planning with key suppliers.",
-            "Model the cost trade-off between inventory holding and faster freight modes.",
+            "Use issue data to drive continuous improvement with your partners.",
+            "Make sure processes still hold when key people are away.",
           ],
         },
       },
-      blaiklockHelp: "Blaiklock can share real lead-time data for your lanes, help plan peak-season bookings and offer consolidation and warehousing options to balance cost and stock.",
-    },
-
-    {
-      id: "cost",
-      name: "Cost & Partner Management",
-      icon: "£",
-      intro: "How well you control freight spend and how you work with your logistics partners.",
-      questions: [
-        {
-          id: "cost1",
-          text: "How do you buy freight?",
-          options: [
-            { label: "Ad hoc — whoever is available at the time", score: 0 },
-            { label: "Spot quotes from a regular provider", score: 1 },
-            { label: "A mix of agreed rates and spot quotes", score: 2 },
-            { label: "Structured agreements reviewed against the market", score: 3 },
-          ],
-          improve: "Consolidate your freight buying with a trusted partner and agree rates for your regular lanes, benchmarking them against the market at least twice a year.",
-        },
-        {
-          id: "cost2",
-          text: "How often are you hit by unexpected charges (demurrage, detention, storage, surcharges)?",
-          options: [
-            { label: "Regularly", score: 0 },
-            { label: "Sometimes", score: 1 },
-            { label: "Rarely", score: 2 },
-            { label: "Almost never — we know exactly what to expect", score: 3 },
-          ],
-          improve: "Unexpected charges are usually caused by late collections or late paperwork. Agree free-time allowances up front and plan deliveries so containers are collected and returned on time.",
-        },
-        {
-          id: "cost3",
-          text: "How would you describe the relationship with your current logistics provider(s)?",
-          options: [
-            { label: "Transactional — we struggle to get help when it matters", score: 0 },
-            { label: "OK, but we're just a number", score: 1 },
-            { label: "Good — they respond well when we ask", score: 2 },
-            { label: "A true partnership — they proactively suggest improvements", score: 3 },
-          ],
-          improve: "Look for a logistics partner who gives you a named contact, regular reviews and proactive suggestions — not just quotes.",
-        },
-      ],
-      advice: {
-        vulnerable: {
-          summary: "Freight costs are unpredictable and partner support is limited.",
-          actions: [
-            "Get all-in quotes that spell out every charge before you book.",
-            "Track demurrage, detention and storage charges for three months to find the root causes.",
-            "Talk to a partner who will give you a dedicated contact and a regular review.",
-          ],
-        },
-        reactive: {
-          summary: "Costs are reasonably controlled, but there's money being left on the table.",
-          actions: [
-            "Agree fixed or indexed rates on your regular lanes.",
-            "Hold a quarterly review with your forwarder covering cost, service and upcoming volumes.",
-            "Check invoices against quotes as standard.",
-          ],
-        },
-        proactive: {
-          summary: "You manage freight spend well.",
-          actions: [
-            "Benchmark your rates against the market every six months.",
-            "Look at consolidation, routing and mode choices for further savings.",
-            "Set shared KPIs (on-time, cost per unit, claims) with your logistics partner.",
-          ],
-        },
-        resilient: {
-          summary: "Cost control and partner management are strengths.",
-          actions: [
-            "Work with your partner on longer-term capacity and rate strategies.",
-            "Factor carbon emissions into routing decisions alongside cost.",
-          ],
-        },
-      },
-      blaiklockHelp: "Blaiklock's long-standing relationships with airlines, shipping lines and hauliers mean competitive, transparent rates — backed by a dedicated team who know your business.",
-    },
-
-    {
-      id: "data",
-      name: "Data & Technology",
-      icon: "⌁",
-      intro: "How you capture, share and use supply chain data to make decisions.",
-      questions: [
-        {
-          id: "data1",
-          text: "Where is your shipment and supply chain information kept?",
-          options: [
-            { label: "Mostly in email inboxes", score: 0 },
-            { label: "Spreadsheets maintained manually", score: 1 },
-            { label: "A shared system or portal, partly connected", score: 2 },
-            { label: "Integrated systems (ERP / WMS / forwarder portal) with a single view", score: 3 },
-          ],
-          improve: "Pull your shipment information into one place — a shared tracker or your forwarder's portal — so anyone on the team can answer a status question in seconds.",
-        },
-        {
-          id: "data2",
-          text: "Do you measure supply chain KPIs (e.g. on-time delivery, lead time, cost per shipment)?",
-          options: [
-            { label: "No", score: 0 },
-            { label: "Occasionally, when there's a problem", score: 1 },
-            { label: "Some KPIs, reviewed now and then", score: 2 },
-            { label: "Yes — a regular KPI review drives decisions", score: 3 },
-          ],
-          improve: "Pick three KPIs — on-time delivery, average door-to-door lead time and freight cost per unit — and review them monthly.",
-        },
-        {
-          id: "data3",
-          text: "How much of your shipment administration (bookings, documents, updates) is manual?",
-          options: [
-            { label: "Almost all of it", score: 0 },
-            { label: "Most of it", score: 1 },
-            { label: "Some of it", score: 2 },
-            { label: "Very little — it's largely automated", score: 3 },
-          ],
-          improve: "Identify the most repetitive admin task (often re-keying documents or chasing updates) and ask your logistics partner how they can take it off your hands.",
-        },
-      ],
-      advice: {
-        vulnerable: {
-          summary: "Information is scattered, which makes it hard to act quickly.",
-          actions: [
-            "Create one shared shipment tracker for the whole team.",
-            "Start measuring on-time delivery — even manually.",
-            "Ask your forwarder what reporting they can provide.",
-          ],
-        },
-        reactive: {
-          summary: "You have the data, but it takes effort to use it.",
-          actions: [
-            "Agree a monthly KPI report with your logistics partner.",
-            "Reduce re-keying by asking suppliers and partners for documents in a standard format.",
-            "Give key staff access to your forwarder's tracking tools.",
-          ],
-        },
-        proactive: {
-          summary: "Data is used well to run the operation.",
-          actions: [
-            "Connect shipment data to your stock or ERP system.",
-            "Use KPI trends to drive supplier and carrier reviews.",
-            "Automate routine notifications to your customers.",
-          ],
-        },
-        resilient: {
-          summary: "You're data-driven and well automated.",
-          actions: [
-            "Explore predictive analytics for demand and lead times.",
-            "Use emissions data to support sustainability reporting.",
-          ],
-        },
-      },
-      blaiklockHelp: "Blaiklock can provide regular shipment reporting and KPIs for your account, cutting down manual admin and giving you a single view of your freight.",
+      blaiklockHelp: "Blaiklock gives you a dedicated point of contact who takes ownership of issues and keeps you updated proactively, so you don't have to chase.",
     },
   ],
 
-  // Text for the "deeper dive" (lead capture) section on the results page.
+  // The question asked after the scored questions, and the contact steps that
+  // follow if the respondent says yes.
   deepDive: {
-    heading: "Want a deeper dive?",
-    text: "Book a free, no-obligation supply chain review with a Blaiklock specialist. We'll go through your results, look at your actual shipments and trade lanes, and give you a practical action plan.",
-    benefits: [
-      "A 30-minute call with a Blaiklock specialist",
-      "A review of your customs, routing and freight costs",
-      "A tailored, prioritised improvement plan",
+    question: "Your assessment is complete!",
+    subtitle: "Would you like a deeper review?",
+    yes: "Yes - I'd like Blaiklock to review my results",
+    no: "No thanks - just show me my result",
+    steps: [
+      {
+        id: "name", label: "Name", required: true,
+        fields: [
+          { name: "firstName", placeholder: "First Name", autocomplete: "given-name" },
+          { name: "lastName", placeholder: "Last Name", autocomplete: "family-name" },
+        ],
+      },
+      {
+        id: "company", label: "Company", required: true,
+        fields: [{ name: "company", autocomplete: "organization" }],
+      },
+      {
+        id: "email", label: "Email", required: true,
+        fields: [{ name: "email", type: "email", placeholder: "example@example.com", autocomplete: "email" }],
+      },
+      {
+        id: "phone", label: "Phone Number", hint: "Optional",
+        fields: [{ name: "phone", type: "tel", placeholder: "Please enter a valid phone number.", autocomplete: "tel" }],
+      },
+      {
+        id: "focus", label: "Which area would you most like us to look at?",
+        // Options are the section names, plus this extra choice:
+        extraOption: "I'm not sure — I'd like Blaiklock to review the full result",
+        optionsFromPillars: true,
+      },
+      {
+        id: "region", label: "Where does your supply chain operate?",
+        options: ["UK only", "UK & Europe", "International"],
+      },
     ],
-    thankYou: "Thank you — a member of the Blaiklock team will be in touch within one working day.",
+    privacyNote: "By submitting, you agree to Blaiklock contacting you about your results.",
+    thankYou: "Thanks{name} — a Blaiklock specialist will review your results and be in touch shortly.",
+    // Shown on the results page to people who chose "No thanks".
+    ctaHeading: "Would you like a deeper review?",
+    ctaText: "A Blaiklock specialist can go through your results with you, look at your actual shipments and trade lanes, and give you a practical plan to improve.",
+    ctaButton: "Yes, review my results",
   },
 };

@@ -1,33 +1,48 @@
-/* Blaiklock Supply Chain Health Check — application logic.
+/* Blaiklock Supply Chain Resilience Check — application logic.
    Content lives in config.js; this file only handles flow, scoring and rendering. */
 (function () {
   "use strict";
 
   var C = window.HEALTH_CHECK_CONFIG;
-  var STORAGE_KEY = "blaiklock-health-check-v1";
+  var D = C.deepDive;
+  var STORAGE_KEY = "blaiklock-resilience-check-v2";
   var LETTERS = "ABCDEFGH";
   var app = document.getElementById("app");
   var tooltip = document.getElementById("tooltip");
 
   /* ---------- Steps ---------- */
 
+  // questions → "deeper review?" gate → contact steps (only if they say yes)
   var steps = [];
-  C.profile.forEach(function (q, i) {
-    steps.push({ type: "profile", segment: 0, q: q, index: i });
-  });
   C.pillars.forEach(function (p, pi) {
-    steps.push({ type: "section", segment: pi + 1, pillar: p, pillarIndex: pi });
     p.questions.forEach(function (q, qi) {
-      steps.push({ type: "question", segment: pi + 1, pillar: p, pillarIndex: pi, q: q, index: qi });
+      steps.push({ type: "question", segment: pi, pillar: p, q: q, index: qi });
     });
   });
-  var questionSteps = steps.filter(function (s) { return s.type !== "section"; });
-  var segments = [{ label: "About you" }].concat(C.pillars.map(function (p) { return { label: p.name }; }));
+  var questionCount = steps.length;
+  var GATE = steps.length;
+  steps.push({ type: "gate", segment: C.pillars.length });
+  var FIRST_CONTACT = steps.length;
+  D.steps.forEach(function (cs, i) {
+    var options = cs.optionsFromPillars
+      ? C.pillars.map(function (p) { return p.name; }).concat(cs.extraOption ? [cs.extraOption] : [])
+      : cs.options;
+    steps.push({ type: "contact", segment: C.pillars.length, def: cs, options: options, index: i });
+  });
+  var LAST = steps.length - 1;
+  var segments = C.pillars.map(function (p) { return { label: p.name }; }).concat([{ label: "Your details" }]);
 
   /* ---------- State ---------- */
 
+  // Contact details are kept in memory only, never written to browser storage.
+  var contact = {};
+
   function freshState() {
-    return { view: "intro", step: 0, answers: {}, profile: {}, submitted: false };
+    return { view: "intro", step: 0, answers: {}, submitted: false, fromResults: false };
+  }
+
+  function allAnswered(s) {
+    return steps.every(function (st) { return st.type !== "question" || st.q.options[s.answers[st.q.id]]; });
   }
 
   function loadState() {
@@ -35,21 +50,19 @@
       var s = JSON.parse(localStorage.getItem(STORAGE_KEY));
       if (!s || typeof s !== "object") return null;
       s.answers = s.answers || {};
-      s.profile = s.profile || {};
       // Drop answers that no longer fit the current config (questions edited since).
       steps.forEach(function (st) {
         if (st.type === "question" && !st.q.options[s.answers[st.q.id]]) delete s.answers[st.q.id];
-        if (st.type === "profile" && st.q.options[s.profile[st.q.id]] === undefined) delete s.profile[st.q.id];
       });
-      if (typeof s.step !== "number" || s.step < 0 || s.step >= steps.length) s.step = 0;
-      if (s.view === "results" || s.view === "calculating") s.view = allAnswered() ? "results" : "intro";
+      if (typeof s.step !== "number" || s.step < 0 || s.step > LAST) s.step = 0;
+      // Contact steps can't be resumed after a reload (details aren't stored), so go back to the gate.
+      if (s.step > GATE) { s.step = GATE; s.fromResults = false; }
+      if (s.view === "results" || s.view === "calculating") s.view = allAnswered(s) ? "results" : "intro";
+      if (s.view === "steps" && s.step >= GATE && !allAnswered(s)) s.step = 0;
       if (s.view !== "steps" && s.view !== "results") s.view = "intro";
       return s;
     } catch (e) {
       return null;
-    }
-    function allAnswered() {
-      return questionSteps.every(function (st) { return getAnswer(st, s) !== undefined; });
     }
   }
 
@@ -59,21 +72,8 @@
 
   var state = loadState() || freshState();
 
-  function getAnswer(step, s) {
-    s = s || state;
-    if (step.type === "profile") return s.profile[step.q.id];
-    if (step.type === "question") return s.answers[step.q.id];
-    return undefined;
-  }
-
-  function setAnswer(step, value) {
-    if (step.type === "profile") state.profile[step.q.id] = value;
-    else state.answers[step.q.id] = value;
-    saveState();
-  }
-
   function hasProgress() {
-    return Object.keys(state.answers).length > 0 || Object.keys(state.profile).length > 0;
+    return Object.keys(state.answers).length > 0;
   }
 
   /* ---------- DOM helpers ---------- */
@@ -115,13 +115,17 @@
     window.scrollTo({ top: 0 });
     var target = focusSelector && app.querySelector(focusSelector);
     if (target) {
-      target.setAttribute("tabindex", "-1");
+      if (!/^(INPUT|BUTTON|SELECT|TEXTAREA)$/.test(target.tagName)) target.setAttribute("tabindex", "-1");
       target.focus({ preventScroll: true });
     }
   }
 
   function pillarIcon(p) {
     return h("span", { class: "pillar-icon", "aria-hidden": "true" }, p.icon || p.name.charAt(0));
+  }
+
+  function reducedMotion() {
+    return window.matchMedia("(prefers-reduced-motion: reduce)").matches;
   }
 
   /* ---------- Top bar & progress ---------- */
@@ -140,7 +144,7 @@
 
     var current = state.view === "steps" ? steps[state.step] : null;
     track.replaceChildren.apply(track, segments.map(function (seg, i) {
-      var inSeg = questionSteps.filter(function (st) { return st.segment === i; });
+      var inSeg = steps.filter(function (st) { return st.segment === i; });
       var done = current
         ? inSeg.filter(function (st) { return steps.indexOf(st) < state.step; }).length
         : inSeg.length;
@@ -151,44 +155,38 @@
         h("div", { class: "progress__label" }, seg.label));
     }));
 
-    if (current && current.type !== "section") {
-      meta.textContent = "Question " + (questionSteps.indexOf(current) + 1) + " of " + questionSteps.length;
-    } else if (current) {
-      meta.textContent = "Section " + (current.pillarIndex + 1) + " of " + C.pillars.length;
-    } else {
-      meta.textContent = "Your results";
-    }
+    if (!current) meta.textContent = "Your results";
+    else if (current.type === "question") meta.textContent = "Question " + (state.step + 1) + " of " + questionCount;
+    else if (current.type === "gate") meta.textContent = "Assessment complete";
+    else meta.textContent = "Your details · " + (current.index + 1) + " of " + D.steps.length;
   }
 
   /* ---------- Render: intro ---------- */
 
   function renderIntro() {
-    var minutes = Math.max(3, Math.round(questionSteps.length * 0.25));
     var resume = hasProgress() && state.view !== "results";
 
     var view = h("section", { class: "intro enter" },
-      h("div", null,
+      h("div", { class: "intro__main" },
         h("span", { class: "eyebrow" }, "Free assessment"),
-        h("h1", null, "How healthy is your supply chain?"),
+        h("h1", null, C.brand.name + " – " + C.brand.title),
+        h("p", { class: "intro__tagline" }, C.brand.tagline),
         h("p", { class: "intro__lead" },
-          "Answer " + questionSteps.length + " quick questions across " + C.pillars.length +
-          " areas of your supply chain. You'll get an instant score, see exactly where you're strong and where you're exposed, and get tailored advice from Blaiklock on how to improve."),
-        h("ul", { class: "intro__facts" },
-          h("li", null, "Takes around " + minutes + " minutes"),
-          h("li", null, "Instant, personalised results"),
-          h("li", null, "No sign-up needed")),
+          "Find out how resilient your supply chain really is. You'll see your score across " + C.pillars.length +
+          " key areas, where you're strong, where you're exposed — and tailored advice on how to improve."),
         h("div", { class: "intro__actions" },
           resume
             ? [
                 h("button", { class: "btn btn--primary", type: "button", onclick: function () { go("steps", state.step); } }, "Continue where you left off →"),
                 h("button", { class: "btn btn--ghost", type: "button", onclick: restart }, "Start again"),
               ]
-            : h("button", { class: "btn btn--primary", type: "button", onclick: function () { go("steps", 0); } }, "Start the health check →")),
+            : h("button", { class: "btn btn--primary", type: "button", onclick: function () { go("steps", 0); } }, "Start →")),
         resume ? h("p", { class: "resume-note" }, "We've saved your progress on this device.") : null),
       h("aside", { class: "card intro__panel" },
         h("h2", null, "What we'll look at"),
         h("ul", { class: "pillar-list" }, C.pillars.map(function (p, i) {
-          return h("li", { style: "animation-delay:" + (i * 60) + "ms" }, pillarIcon(p), p.name);
+          return h("li", { style: "animation-delay:" + (i * 60) + "ms" }, pillarIcon(p),
+            h("span", null, h("strong", null, p.name), h("small", null, p.intro)));
         }))));
 
     mount(view, "h1");
@@ -202,81 +200,300 @@
     var step = steps[state.step];
     var anim = direction === "back" ? "enter-back" : "enter";
     advancing = false;
+    if (step.type === "question") renderQuestion(step, anim);
+    else if (step.type === "gate") renderGate(anim);
+    else renderContact(step, anim);
+  }
 
-    if (step.type === "section") {
-      var p = step.pillar;
-      mount(h("section", { class: "stage" },
-        h("div", { class: "card section-intro " + anim },
-          pillarIcon(p),
-          h("div", { class: "section-intro__step" }, "Section " + (step.pillarIndex + 1) + " of " + C.pillars.length),
-          h("h2", null, p.name),
-          h("p", null, p.intro),
-          h("button", { class: "btn btn--primary", type: "button", onclick: next },
-            "Start section · " + p.questions.length + " questions →")),
-        navRow(step, true)), "h2");
-      return;
-    }
-
-    var q = step.q;
-    var selected = getAnswer(step);
-    var labels = step.type === "profile"
-      ? q.options
-      : q.options.map(function (o) { return o.label; });
-    var context = step.type === "profile"
-      ? [h("strong", null, "About you")]
-      : [pillarIcon(step.pillar), h("span", null, h("strong", null, step.pillar.name), " · Question " + (step.index + 1) + " of " + step.pillar.questions.length)];
-
-    var options = h("div", { class: "options", role: "radiogroup", "aria-labelledby": "q-title" },
+  function optionList(labels, selected, onPick, labelledBy, badges) {
+    return h("div", { class: "options", role: "radiogroup", "aria-labelledby": labelledBy },
       labels.map(function (label, i) {
         return h("button", {
           class: "option", type: "button", role: "radio",
           "aria-checked": selected === i ? "true" : "false",
-          "data-index": i,
-          onclick: function () { choose(i); },
-        }, h("span", { class: "option__key", "aria-hidden": "true" }, LETTERS[i]), h("span", null, label));
+          onclick: function () { onPick(i); },
+        },
+        h("span", { class: "option__key", "aria-hidden": "true" }, LETTERS[i]),
+        h("span", { class: "option__label" }, label),
+        badges && badges[i] ? h("span", { class: "option__badge" }, badges[i]) : null);
       }));
-
-    mount(h("section", { class: "stage " + anim },
-      h("div", { class: "q-meta" }, context),
-      h("h2", { class: "q-title", id: "q-title" }, q.text),
-      options,
-      navRow(step, selected !== undefined)), "#q-title");
   }
 
-  function navRow(step, canContinue) {
+  function markPicked(i) {
+    app.querySelectorAll(".option").forEach(function (btn, j) {
+      btn.setAttribute("aria-checked", j === i ? "true" : "false");
+      if (j === i) btn.classList.add("is-picked");
+    });
+  }
+
+  function renderQuestion(step, anim) {
+    var q = step.q;
+    var selected = state.answers[q.id];
+    mount(h("section", { class: "stage " + anim },
+      h("div", { class: "card stage__card" },
+        h("div", { class: "q-meta" },
+          pillarIcon(step.pillar),
+          h("span", null, h("strong", null, step.pillar.name), " · Question " + (step.index + 1) + " of " + step.pillar.questions.length)),
+        h("h2", { class: "q-title", id: "q-title" }, q.text),
+        optionList(q.options.map(function (o) { return o.label; }), selected, choose, "q-title"),
+        navRow({
+          back: true,
+          hint: "Tip: press A–" + LETTERS[q.options.length - 1] + " to answer",
+          next: { label: "Next →", disabled: selected === undefined, onclick: next },
+        }))), "#q-title");
+  }
+
+  function renderGate(anim) {
+    var picked = state.gateChoice;
+    mount(h("section", { class: "stage " + anim },
+      h("div", { class: "card stage__card gate" },
+        h("div", { class: "gate__icon", "aria-hidden": "true" }, "✓"),
+        h("h2", { class: "q-title", id: "q-title" }, D.question),
+        h("p", { class: "gate__sub" }, D.subtitle),
+        optionList([D.yes, D.no], picked, chooseGate, "q-title"),
+        navRow({ back: true, hint: "Tip: press A or B to answer" }))), "#q-title");
+  }
+
+  function renderContact(step, anim) {
+    var def = step.def;
+    var isLast = state.step === LAST;
+    var body;
+
+    if (def.fields) {
+      body = h("div", { class: "fields fields--" + def.fields.length },
+        def.fields.map(function (f) {
+          return h("input", {
+            class: "input", id: "f-" + f.name, name: f.name, type: f.type || "text",
+            placeholder: f.placeholder, autocomplete: f.autocomplete,
+            "aria-label": f.placeholder || def.label, "aria-required": def.required ? "true" : null,
+            "aria-describedby": "step-error", value: contact[f.name] || "",
+          });
+        }));
+    } else {
+      var badges = null;
+      if (def.optionsFromPillars) {
+        var weakest = lowestPillarIndex();
+        badges = {};
+        badges[weakest] = "Your lowest score";
+      }
+      body = optionList(step.options, contact[def.id], function (i) { chooseContact(step, i); }, "q-title", badges);
+    }
+
+    var form = h("form", { class: "card stage__card", novalidate: true, onsubmit: function (e) { e.preventDefault(); next(); } },
+      h("h2", { class: "q-title", id: "q-title" }, def.label,
+        def.required ? h("span", { class: "req", "aria-hidden": "true" }, " *") : null),
+      def.hint ? h("p", { class: "step-hint" }, def.hint) : null,
+      body,
+      h("p", { class: "step-error", id: "step-error", "aria-live": "polite" }),
+      isLast && D.privacyNote ? h("p", { class: "privacy" }, D.privacyNote) : null,
+      navRow({
+        back: true,
+        status: true,
+        next: { label: isLast ? "Submit" : "Next →", submit: true, primary: isLast },
+      }));
+
+    mount(h("section", { class: "stage " + anim }, form), def.fields ? "#f-" + def.fields[0].name : "#q-title");
+  }
+
+  function navRow(opts) {
     return h("div", { class: "q-nav" },
-      h("button", { class: "btn btn--link", type: "button", onclick: back }, "← Back"),
-      step.type === "section"
-        ? h("span")
-        : h("span", { class: "q-hint" }, "Tip: press ", h("kbd", null, "A"), "–", h("kbd", null, LETTERS[step.q.options.length - 1]), " to answer"),
-      step.type === "section"
-        ? h("span")
-        : h("button", { class: "btn btn--ghost", type: "button", disabled: !canContinue, onclick: next }, "Next →"));
+      opts.back ? h("button", { class: "btn btn--link", type: "button", onclick: back }, "← Previous") : h("span"),
+      opts.hint ? h("span", { class: "q-hint" }, opts.hint) : opts.status ? h("span", { class: "form__status", id: "form-status", "aria-live": "polite" }) : h("span"),
+      opts.next
+        ? h("button", {
+            class: "btn " + (opts.next.primary ? "btn--primary" : "btn--ghost"),
+            type: opts.next.submit ? "submit" : "button",
+            disabled: opts.next.disabled, onclick: opts.next.onclick,
+          }, opts.next.label)
+        : h("span"));
   }
 
   function choose(i) {
     if (advancing) return;
     var step = steps[state.step];
-    if (step.type === "section" || i >= step.q.options.length) return;
-    setAnswer(step, i);
+    state.answers[step.q.id] = i;
+    saveState();
     advancing = true;
-    app.querySelectorAll(".option").forEach(function (btn, j) {
-      btn.setAttribute("aria-checked", j === i ? "true" : "false");
-      if (j === i) btn.classList.add("is-picked");
-    });
+    markPicked(i);
+    setTimeout(next, 340);
+  }
+
+  function chooseGate(i) {
+    if (advancing) return;
+    advancing = true;
+    state.gateChoice = i;
+    markPicked(i);
+    setTimeout(function () {
+      if (i === 0) go("steps", FIRST_CONTACT);
+      else finish();
+    }, 340);
+  }
+
+  function chooseContact(step, i) {
+    if (advancing) return;
+    contact[step.def.id] = i;
+    markPicked(i);
+    if (state.step === LAST) return; // last step waits for Submit
+    advancing = true;
     setTimeout(next, 340);
   }
 
   function next() {
     var step = steps[state.step];
-    if (step.type !== "section" && getAnswer(step) === undefined) return;
-    if (state.step < steps.length - 1) go("steps", state.step + 1);
-    else finish();
+    if (step.type === "question") {
+      if (state.answers[step.q.id] === undefined) return;
+      go("steps", state.step + 1);
+    } else if (step.type === "contact") {
+      if (!collectContactStep(step)) return;
+      if (state.step < LAST) go("steps", state.step + 1);
+      else submit();
+    }
   }
 
   function back() {
-    if (state.step > 0) go("steps", state.step - 1, "back");
+    if (state.step === FIRST_CONTACT && state.fromResults) { state.fromResults = false; go("results"); }
+    else if (state.step > 0) go("steps", state.step - 1, "back");
     else go("intro");
+  }
+
+  /* ---------- Contact details ---------- */
+
+  function collectContactStep(step) {
+    var def = step.def;
+    var error = "";
+    if (def.fields) {
+      def.fields.forEach(function (f) {
+        var input = document.getElementById("f-" + f.name);
+        if (input) contact[f.name] = input.value.trim();
+      });
+      error = contactError(def);
+      app.querySelectorAll(".input").forEach(function (input) {
+        var v = input.value.trim();
+        var bad = !!error && (def.required && !v ||
+          input.type === "email" && v && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v) ||
+          input.type === "tel" && v && !/^[+()\d\s-]{6,}$/.test(v));
+        input.classList.toggle("has-error", !!bad);
+        input.setAttribute("aria-invalid", bad ? "true" : "false");
+      });
+    }
+    var errEl = document.getElementById("step-error");
+    if (errEl) errEl.textContent = error;
+    if (error) {
+      var firstBad = app.querySelector(".input.has-error");
+      if (firstBad) firstBad.focus();
+      return false;
+    }
+    return true;
+  }
+
+  function contactError(def) {
+    if (!def.fields) return "";
+    var missing = def.required && def.fields.some(function (f) { return !contact[f.name]; });
+    if (missing) return "This field is required.";
+    var email = def.fields.filter(function (f) { return f.type === "email"; })[0];
+    if (email && contact[email.name] && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(contact[email.name])) {
+      return "Please enter a valid email address.";
+    }
+    var tel = def.fields.filter(function (f) { return f.type === "tel"; })[0];
+    if (tel && contact[tel.name] && !/^[+()\d\s-]{6,}$/.test(contact[tel.name])) {
+      return "Please enter a valid phone number.";
+    }
+    return "";
+  }
+
+  function submit() {
+    // Details may be missing if the page was reloaded part-way through; send them back to that step.
+    for (var i = FIRST_CONTACT; i <= LAST; i++) {
+      if (contactError(steps[i].def)) { go("steps", i, "back"); return; }
+    }
+    var results = computeResults();
+    var payload = buildPayload(results);
+    var button = app.querySelector('button[type="submit"]');
+    var status = document.getElementById("form-status");
+    var endpoint = C.submission && C.submission.endpoint;
+
+    function done() {
+      state.submitted = true;
+      var fromResults = state.fromResults;
+      state.fromResults = false;
+      if (fromResults) go("results");
+      else finish();
+    }
+
+    if (!endpoint) {
+      var to = (C.submission && C.submission.fallbackEmail) || C.brand.email;
+      window.location.href = "mailto:" + encodeURIComponent(to) +
+        "?subject=" + encodeURIComponent("Supply Chain Resilience Check — " + payload.contact.company) +
+        "&body=" + encodeURIComponent(emailBody(payload));
+      done();
+      return;
+    }
+
+    button.disabled = true;
+    status.className = "form__status";
+    status.textContent = "Sending…";
+    fetch(endpoint, {
+      method: "POST",
+      headers: { "Content-Type": "application/json", Accept: "application/json" },
+      body: JSON.stringify(payload),
+    }).then(function (res) {
+      if (!res.ok) throw new Error("HTTP " + res.status);
+      done();
+    }).catch(function () {
+      button.disabled = false;
+      status.className = "form__status is-error";
+      status.replaceChildren("Sorry, that didn't send. Please try again, or email ",
+        h("a", { href: "mailto:" + C.brand.email }, C.brand.email), ".");
+    });
+  }
+
+  function contactChoice(id) {
+    var st = steps.filter(function (x) { return x.type === "contact" && x.def.id === id; })[0];
+    return st && st.options[contact[id]] || "";
+  }
+
+  function buildPayload(results) {
+    return {
+      submittedAt: new Date().toISOString(),
+      source: C.brand.name + " " + C.brand.title,
+      contact: {
+        firstName: contact.firstName || "",
+        lastName: contact.lastName || "",
+        company: contact.company || "",
+        email: contact.email || "",
+        phone: contact.phone || "",
+        areaToLookAt: contactChoice("focus"),
+        supplyChainOperates: contactChoice("region"),
+      },
+      overall: { score: results.overall, level: results.level.label },
+      sections: results.pillars.map(function (r) {
+        return { section: r.pillar.name, score: r.score, level: r.level.label };
+      }),
+      answers: C.pillars.reduce(function (all, p) {
+        return all.concat(p.questions.map(function (q) {
+          var opt = q.options[state.answers[q.id]];
+          return { section: p.name, question: q.text, answer: opt ? opt.label : "", score: opt ? opt.score : null };
+        }));
+      }, []),
+    };
+  }
+
+  function emailBody(payload) {
+    var c = payload.contact;
+    var lines = [
+      C.brand.title + " — deeper review request", "",
+      "Name: " + c.firstName + " " + c.lastName,
+      "Company: " + c.company,
+      "Email: " + c.email,
+      "Phone: " + c.phone,
+      "Area to look at: " + c.areaToLookAt,
+      "Supply chain operates: " + c.supplyChainOperates, "",
+      "Overall score: " + payload.overall.score + "/100 (" + payload.overall.level + ")",
+    ];
+    payload.sections.forEach(function (sct) { lines.push("- " + sct.section + ": " + sct.score + "% (" + sct.level + ")"); });
+    lines.push("", "Answers:");
+    payload.answers.forEach(function (a) { lines.push("- " + a.question + " → " + a.answer); });
+    return lines.join("\n");
   }
 
   /* ---------- Scoring ---------- */
@@ -307,6 +524,12 @@
     return { pillars: pillars, overall: overall, level: levelFor(overall) };
   }
 
+  function lowestPillarIndex() {
+    var res = computeResults().pillars, low = 0;
+    res.forEach(function (r, i) { if (r.score < res[low].score) low = i; });
+    return low;
+  }
+
   function priorities(results) {
     var byScore = results.pillars.slice().sort(function (a, b) { return a.score - b.score; });
     var items = [];
@@ -332,13 +555,12 @@
     updateChrome();
     var labels = ["Scoring your answers", "Comparing across " + C.pillars.length + " areas", "Building your recommendations"];
     var list = h("ul", { class: "calc-steps" }, labels.map(function (l) { return h("li", null, l); }));
-    mount(h("section", { class: "calculating enter" },
+    mount(h("section", { class: "card calculating enter" },
       h("div", { class: "spinner", "aria-hidden": "true" }),
       h("h2", null, "Analysing your supply chain…"),
       list), "h2");
     var items = list.querySelectorAll("li");
-    var reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-    var delay = reduce ? 150 : 650;
+    var delay = reducedMotion() ? 150 : 650;
     items.forEach(function (li, i) { setTimeout(function () { li.classList.add("done"); }, delay * (i + 1)); });
     setTimeout(function () { go("results"); }, delay * (items.length + 1));
   }
@@ -350,10 +572,10 @@
     var sorted = results.pillars.slice().sort(function (a, b) { return b.score - a.score; });
     var strengths = sorted.slice(0, 2);
     var gaps = sorted.slice(-2).reverse();
-    var weakest = gaps[0];
 
     var view = h("div", { class: "results" },
       heroCard(results),
+      state.submitted ? thanksBanner() : null,
       h("div", { class: "split" },
         miniPanel("Your strongest areas", strengths),
         miniPanel("Your biggest opportunities", gaps)),
@@ -365,12 +587,12 @@
         h("ol", { class: "priorities" }, priorities(results).map(function (it) {
           return h("li", null, h("div", null, h("div", { class: "priorities__area" }, it.area), h("p", null, it.text)));
         }))),
-      breakdownPanel(results, weakest),
-      deepDive(results, weakest),
-      h("div", { class: "results-actions" },
+      breakdownPanel(results, gaps[0]),
+      state.submitted ? null : ctaCard(),
+      h("div", { class: "card results-actions" },
         h("button", { class: "btn btn--ghost", type: "button", onclick: function () { window.print(); } }, "Download / print my report"),
         h("button", { class: "btn btn--link", type: "button", onclick: function () { go("steps", 0); } }, "Review my answers"),
-        h("button", { class: "btn btn--link", type: "button", onclick: restart }, "Retake the health check")));
+        h("button", { class: "btn btn--link", type: "button", onclick: restart }, "Retake the check")));
 
     mount(view, "#result-title");
     animateResults(results);
@@ -395,11 +617,11 @@
     });
 
     return h("section", { class: "card hero", "aria-labelledby": "result-title" },
-      h("div", { class: "gauge", role: "img", "aria-label": "Overall score " + results.overall + " out of 100, " + level.label },
+      h("div", { class: "gauge", role: "img", "aria-label": "Resilience score " + results.overall + " out of 100, " + level.label },
         svg,
         h("div", { class: "gauge__center" },
           h("div", { class: "gauge__num" }, h("span", { id: "gauge-num" }, "0"), h("small", null, "/100")),
-          h("div", { class: "gauge__cap" }, "Overall health score"))),
+          h("div", { class: "gauge__cap" }, "Resilience score"))),
       h("div", null,
         h("span", { class: "level-badge status-" + level.status },
           h("span", { class: "level-badge__icon", "aria-hidden": "true" }, level.icon),
@@ -418,6 +640,13 @@
           h("div", { class: "scale__labels" }, bands.map(function (b) {
             return h("span", { class: b.level === level ? "is-current" : "", style: "flex:" + b.width }, b.level.label);
           })))));
+  }
+
+  function thanksBanner() {
+    var name = contact.firstName;
+    return h("section", { class: "card banner", role: "status" },
+      h("span", { class: "banner__icon", "aria-hidden": "true" }, "✓"),
+      h("p", null, D.thankYou.replace("{name}", name ? ", " + name : "")));
   }
 
   function miniPanel(title, rows) {
@@ -464,6 +693,7 @@
         h("span", { class: "chevron", "aria-hidden": "true" }, "▾"));
 
       var body = h("div", { class: "pillar-row__body", id: bodyId },
+        h("p", { class: "pillar-row__intro" }, r.pillar.intro),
         h("p", { class: "pillar-row__summary" }, advice.summary),
         h("div", { class: "advice-grid" },
           h("div", { class: "advice-block" },
@@ -480,7 +710,7 @@
                 })
               : h("p", null, "You answered strongly on every question in this area. Keep reviewing it regularly so it stays that way."))),
         r.pillar.blaiklockHelp
-          ? h("div", { class: "help-note" }, h("strong", null, "How Blaiklock can help"), r.pillar.blaiklockHelp)
+          ? h("div", { class: "help-note" }, h("strong", null, "How " + C.brand.name + " can help"), r.pillar.blaiklockHelp)
           : null);
 
       row.append(head, body);
@@ -500,8 +730,18 @@
         h("span", null, h("i", { class: "avg" }), "Your overall score")));
   }
 
+  function ctaCard() {
+    return h("section", { class: "card cta" },
+      h("div", null,
+        h("h2", null, D.ctaHeading),
+        h("p", null, D.ctaText)),
+      h("button", {
+        class: "btn btn--primary", type: "button",
+        onclick: function () { state.fromResults = true; go("steps", FIRST_CONTACT); },
+      }, D.ctaButton + " →"));
+  }
+
   function animateResults(results) {
-    var reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
     requestAnimationFrame(function () {
       requestAnimationFrame(function () {
         var circle = document.getElementById("gauge-value");
@@ -511,12 +751,11 @@
         app.querySelectorAll(".bar__fill").forEach(function (el) { el.style.width = el.getAttribute("data-width") + "%"; });
 
         var num = document.getElementById("gauge-num");
-        if (reduce) { num.textContent = results.overall; return; }
+        if (reducedMotion()) { num.textContent = results.overall; return; }
         var start = performance.now(), dur = 1300;
         (function tick(now) {
           var t = Math.min(1, (now - start) / dur);
-          var eased = 1 - Math.pow(1 - t, 3);
-          num.textContent = Math.round(results.overall * eased);
+          num.textContent = Math.round(results.overall * (1 - Math.pow(1 - t, 3)));
           if (t < 1) requestAnimationFrame(tick);
         })(start);
       });
@@ -540,201 +779,6 @@
     });
   }
 
-  /* ---------- Deep dive (lead capture) ---------- */
-
-  function deepDive(results, weakest) {
-    var D = C.deepDive;
-    var wrap = h("section", { class: "card deepdive", id: "deep-dive", "aria-labelledby": "deepdive-title" });
-    var intro = h("div", { class: "deepdive__intro" },
-      h("h2", { id: "deepdive-title" }, D.heading),
-      h("p", null, D.text),
-      h("ul", null, D.benefits.map(function (b) { return h("li", null, b); })));
-
-    if (state.submitted) {
-      wrap.append(intro, thanks(D.thankYou));
-      return wrap;
-    }
-
-    function field(name, label, opts) {
-      opts = opts || {};
-      var id = "f-" + name;
-      var control;
-      if (opts.type === "select") {
-        control = h("select", { id: id, name: name, required: opts.required },
-          opts.options.map(function (o) { return h("option", { value: o, selected: o === opts.value }, o); }));
-      } else if (opts.type === "textarea") {
-        control = h("textarea", { id: id, name: name, placeholder: opts.placeholder });
-      } else {
-        control = h("input", {
-          id: id, name: name, type: opts.type || "text", required: opts.required,
-          autocomplete: opts.autocomplete, placeholder: opts.placeholder,
-        });
-      }
-      return h("div", { class: "field" + (opts.full ? " field--full" : "") },
-        h("label", { for: id }, label, opts.required ? h("span", { class: "req", "aria-hidden": "true" }, " *") : null),
-        control,
-        h("div", { class: "field__error", id: id + "-error", "aria-live": "polite" }));
-    }
-
-    var focusOptions = C.pillars.map(function (p) { return p.name; }).concat(["A full supply chain review"]);
-    var status = h("p", { class: "form__status", "aria-live": "polite" });
-    var form = h("form", { class: "form", novalidate: true },
-      field("firstName", "First name", { required: true, autocomplete: "given-name" }),
-      field("lastName", "Last name", { required: true, autocomplete: "family-name" }),
-      field("email", "Work email", { required: true, type: "email", autocomplete: "email" }),
-      field("phone", "Phone number", { type: "tel", autocomplete: "tel" }),
-      field("company", "Company", { required: true, autocomplete: "organization" }),
-      field("jobTitle", "Job title", { autocomplete: "organization-title" }),
-      field("focus", "What would you most like help with?", { type: "select", options: focusOptions, value: weakest.pillar.name, full: true }),
-      field("message", "Anything else we should know? (optional)", { type: "textarea", full: true, placeholder: "e.g. your main trade lanes, products, or a current challenge" }),
-      h("input", { class: "hp", type: "text", name: "website", tabindex: "-1", autocomplete: "off", "aria-hidden": "true" }),
-      h("div", { class: "field field--full" },
-        h("label", { class: "check" },
-          h("input", { type: "checkbox", name: "consent", id: "f-consent", required: true }),
-          h("span", null, "I agree to Blaiklock contacting me about my results and storing my details for this purpose.")),
-        h("div", { class: "field__error", id: "f-consent-error", "aria-live": "polite" })),
-      h("div", { class: "form__actions" },
-        h("button", { class: "btn btn--primary", type: "submit" }, "Book my free review →"),
-        status));
-
-    form.addEventListener("submit", function (e) {
-      e.preventDefault();
-      if (!validate(form)) return;
-      if (form.elements.website.value) return; // honeypot: silently ignore bots
-      submitLead(form, results, status, function (usedEmailClient) {
-        state.submitted = true;
-        saveState();
-        wrap.replaceChildren(intro, thanks(usedEmailClient
-          ? "Your email app should have opened with your details and results — just press send and a member of the Blaiklock team will be in touch."
-          : D.thankYou));
-        wrap.querySelector(".thanks h3").focus();
-      });
-    });
-
-    wrap.append(intro, form);
-    return wrap;
-  }
-
-  function thanks(text) {
-    return h("div", { class: "thanks" },
-      h("div", { class: "thanks__icon", "aria-hidden": "true" }, "✓"),
-      h("h3", { tabindex: "-1" }, "Thanks — we've got your details"),
-      h("p", null, text));
-  }
-
-  function validate(form) {
-    var ok = true, firstBad = null;
-    var checks = {
-      firstName: function (v) { return v.trim() ? "" : "Please enter your first name."; },
-      lastName: function (v) { return v.trim() ? "" : "Please enter your last name."; },
-      email: function (v) { return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v.trim()) ? "" : "Please enter a valid email address."; },
-      company: function (v) { return v.trim() ? "" : "Please enter your company name."; },
-    };
-    Object.keys(checks).forEach(function (name) {
-      var input = form.elements[name];
-      var msg = checks[name](input.value);
-      setError(input, msg);
-      if (msg) { ok = false; firstBad = firstBad || input; }
-    });
-    var consent = form.elements.consent;
-    var consentMsg = consent.checked ? "" : "Please tick to let us contact you.";
-    setError(consent, consentMsg);
-    if (consentMsg) { ok = false; firstBad = firstBad || consent; }
-    if (firstBad) firstBad.focus();
-    return ok;
-  }
-
-  function setError(input, msg) {
-    var fieldEl = input.closest(".field");
-    fieldEl.classList.toggle("has-error", !!msg);
-    input.setAttribute("aria-invalid", msg ? "true" : "false");
-    input.setAttribute("aria-describedby", input.id + "-error");
-    document.getElementById(input.id + "-error").textContent = msg;
-  }
-
-  function buildPayload(form, results) {
-    var el = form.elements;
-    return {
-      submittedAt: new Date().toISOString(),
-      source: "Blaiklock Supply Chain Health Check",
-      contact: {
-        firstName: el.firstName.value.trim(),
-        lastName: el.lastName.value.trim(),
-        email: el.email.value.trim(),
-        phone: el.phone.value.trim(),
-        company: el.company.value.trim(),
-        jobTitle: el.jobTitle.value.trim(),
-        focus: el.focus.value,
-        message: el.message.value.trim(),
-        consent: el.consent.checked,
-      },
-      profile: C.profile.map(function (q) {
-        return { question: q.text, answer: q.options[state.profile[q.id]] || "" };
-      }),
-      overall: { score: results.overall, level: results.level.label },
-      sections: results.pillars.map(function (r) {
-        return { section: r.pillar.name, score: r.score, level: r.level.label };
-      }),
-      answers: C.pillars.reduce(function (all, p) {
-        return all.concat(p.questions.map(function (q) {
-          var opt = q.options[state.answers[q.id]];
-          return { section: p.name, question: q.text, answer: opt ? opt.label : "", score: opt ? opt.score : null };
-        }));
-      }, []),
-    };
-  }
-
-  function emailBody(payload) {
-    var c = payload.contact;
-    var lines = [
-      "Supply Chain Health Check — deeper dive request", "",
-      "Name: " + c.firstName + " " + c.lastName,
-      "Company: " + c.company,
-      "Job title: " + c.jobTitle,
-      "Email: " + c.email,
-      "Phone: " + c.phone,
-      "Wants help with: " + c.focus,
-      "Message: " + c.message, "",
-      "Overall score: " + payload.overall.score + "/100 (" + payload.overall.level + ")",
-    ];
-    payload.sections.forEach(function (sct) { lines.push("- " + sct.section + ": " + sct.score + "% (" + sct.level + ")"); });
-    lines.push("");
-    payload.profile.forEach(function (p) { lines.push(p.question + " " + p.answer); });
-    return lines.join("\n");
-  }
-
-  function submitLead(form, results, status, done) {
-    var payload = buildPayload(form, results);
-    var endpoint = C.submission && C.submission.endpoint;
-    var button = form.querySelector('button[type="submit"]');
-
-    if (!endpoint) {
-      var to = (C.submission && C.submission.fallbackEmail) || C.brand.email;
-      window.location.href = "mailto:" + encodeURIComponent(to) +
-        "?subject=" + encodeURIComponent("Supply Chain Health Check — " + payload.contact.company) +
-        "&body=" + encodeURIComponent(emailBody(payload));
-      done(true);
-      return;
-    }
-
-    button.disabled = true;
-    status.className = "form__status";
-    status.textContent = "Sending…";
-    fetch(endpoint, {
-      method: "POST",
-      headers: { "Content-Type": "application/json", Accept: "application/json" },
-      body: JSON.stringify(payload),
-    }).then(function (res) {
-      if (!res.ok) throw new Error("HTTP " + res.status);
-      done(false);
-    }).catch(function () {
-      button.disabled = false;
-      status.className = "form__status is-error";
-      status.replaceChildren("Sorry, something went wrong sending your details. Please try again, or email us at ",
-        h("a", { href: "mailto:" + C.brand.email }, C.brand.email), ".");
-    });
-  }
-
   /* ---------- Navigation ---------- */
 
   function go(view, step, direction) {
@@ -749,6 +793,7 @@
   }
 
   function restart() {
+    contact = {};
     state = freshState();
     saveState();
     go("intro");
@@ -758,17 +803,14 @@
     if (state.view !== "steps" || e.metaKey || e.ctrlKey || e.altKey) return;
     var tag = (e.target.tagName || "").toLowerCase();
     if (tag === "input" || tag === "textarea" || tag === "select") return;
-    var step = steps[state.step];
+    var options = app.querySelectorAll(".option");
     var key = e.key.toLowerCase();
 
-    if (step.type !== "section") {
-      var idx = LETTERS.toLowerCase().indexOf(key);
-      if (idx === -1 && /^[1-9]$/.test(key)) idx = parseInt(key, 10) - 1;
-      if (idx > -1 && idx < step.q.options.length) { e.preventDefault(); choose(idx); return; }
-    }
-    if (key === "enter" && tag !== "button") { e.preventDefault(); next(); }
-    else if (key === "arrowright" && (step.type === "section" || getAnswer(step) !== undefined)) { e.preventDefault(); next(); }
-    else if (key === "arrowleft") { e.preventDefault(); back(); }
+    var idx = LETTERS.toLowerCase().indexOf(key);
+    if (idx === -1 && /^[1-9]$/.test(key)) idx = parseInt(key, 10) - 1;
+    if (idx > -1 && idx < options.length) { e.preventDefault(); options[idx].click(); return; }
+    if (key === "arrowleft") { e.preventDefault(); back(); }
+    else if (key === "arrowright" && steps[state.step].type === "question") { e.preventDefault(); next(); }
   });
 
   document.querySelector('[data-action="home"]').addEventListener("click", function (e) {
