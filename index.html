@@ -1,0 +1,42 @@
+<!doctype html>
+<html lang="en-GB">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Supply Chain Health Check | Blaiklock</title>
+  <meta name="description" content="Take Blaiklock's free 5-minute Supply Chain Health Check. Get your score across six areas, see where you're strong and where you're exposed, and get tailored advice on how to improve.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="assets/styles.css">
+</head>
+<body>
+  <header class="topbar">
+    <div class="topbar__inner">
+      <a class="brand" href="#" data-action="home" aria-label="Blaiklock Supply Chain Health Check — start">
+        <span class="brand__mark" aria-hidden="true">B</span>
+        <span class="brand__text"><strong>Blaiklock</strong><span>Supply Chain Health Check</span></span>
+      </a>
+      <div class="topbar__meta" id="topbar-meta" aria-live="polite"></div>
+    </div>
+    <div class="progress" id="progress" hidden>
+      <div class="progress__track" id="progress-track"></div>
+    </div>
+  </header>
+
+  <main id="app" class="app" tabindex="-1">
+    <noscript>
+      <p class="noscript">Please enable JavaScript to take the Supply Chain Health Check.</p>
+    </noscript>
+  </main>
+
+  <footer class="footer">
+    <p>&copy; <span id="year"></span> Blaiklock International Logistics. Your answers are only used to generate your results unless you choose to share your details with us.</p>
+  </footer>
+
+  <div class="tooltip" id="tooltip" role="tooltip" hidden></div>
+
+  <script src="assets/config.js"></script>
+  <script src="assets/app.js"></script>
+</body>
+</html>
