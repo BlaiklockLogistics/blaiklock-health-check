@@ -423,7 +423,7 @@
     if (!endpoint) {
       var to = (C.submission && C.submission.fallbackEmail) || C.brand.email;
       window.location.href = "mailto:" + encodeURIComponent(to) +
-        "?subject=" + encodeURIComponent("Supply Chain Resilience Check — " + payload.contact.company) +
+        "?subject=" + encodeURIComponent(payload._subject) +
         "&body=" + encodeURIComponent(emailBody(payload));
       done();
       return;
@@ -452,48 +452,41 @@
     return st && st.options[contact[id]] || "";
   }
 
+  // A flat list of labelled fields, so each submission reads cleanly in the
+  // notification email. `email` and `_subject` are understood by Formspree
+  // (reply-to address and email subject).
   function buildPayload(results) {
-    return {
-      submittedAt: new Date().toISOString(),
-      source: C.brand.name + " " + C.brand.title,
-      contact: {
-        firstName: contact.firstName || "",
-        lastName: contact.lastName || "",
-        company: contact.company || "",
-        email: contact.email || "",
-        phone: contact.phone || "",
-        areaToLookAt: contactChoice("focus"),
-        supplyChainOperates: contactChoice("region"),
-      },
-      overall: { score: results.overall, level: results.level.label },
-      sections: results.pillars.map(function (r) {
-        return { section: r.pillar.name, score: r.score, level: r.level.label };
-      }),
-      answers: C.pillars.reduce(function (all, p) {
-        return all.concat(p.questions.map(function (q) {
-          var opt = q.options[state.answers[q.id]];
-          return { section: p.name, question: q.text, answer: opt ? opt.label : "", score: opt ? opt.score : null };
-        }));
-      }, []),
+    var name = [contact.firstName, contact.lastName].filter(Boolean).join(" ");
+    var payload = {
+      _subject: C.brand.title + ": " + name + ", " + (contact.company || "") +
+        " (" + results.overall + "/100)",
+      "Name": name,
+      "Company": contact.company || "",
+      "email": contact.email || "",
+      "Phone": contact.phone || "",
+      "Area to look at": contactChoice("focus"),
+      "Supply chain operates": contactChoice("region"),
+      "Overall score": results.overall + "/100 (" + results.level.label + ")",
     };
+    results.pillars.forEach(function (r) {
+      payload[r.pillar.name] = r.got + "/" + r.max + " (" + r.level.label + ")";
+    });
+    var n = 0;
+    C.pillars.forEach(function (p) {
+      p.questions.forEach(function (q) {
+        var opt = q.options[state.answers[q.id]];
+        n++;
+        payload["Q" + n + " – " + p.name] = q.text + " → " + (opt ? opt.label + " (" + opt.score + (opt.score === 1 ? " pt)" : " pts)") : "");
+      });
+    });
+    payload["Submitted"] = new Date().toLocaleString("en-GB");
+    return payload;
   }
 
   function emailBody(payload) {
-    var c = payload.contact;
-    var lines = [
-      C.brand.title + " — deeper review request", "",
-      "Name: " + c.firstName + " " + c.lastName,
-      "Company: " + c.company,
-      "Email: " + c.email,
-      "Phone: " + c.phone,
-      "Area to look at: " + c.areaToLookAt,
-      "Supply chain operates: " + c.supplyChainOperates, "",
-      "Overall score: " + payload.overall.score + "/100 (" + payload.overall.level + ")",
-    ];
-    payload.sections.forEach(function (sct) { lines.push("- " + sct.section + ": " + sct.score + "% (" + sct.level + ")"); });
-    lines.push("", "Answers:");
-    payload.answers.forEach(function (a) { lines.push("- " + a.question + " → " + a.answer); });
-    return lines.join("\n");
+    return Object.keys(payload).filter(function (k) { return k !== "_subject"; }).map(function (k) {
+      return (k === "email" ? "Email" : k) + ": " + payload[k];
+    }).join("\n");
   }
 
   /* ---------- Scoring ---------- */

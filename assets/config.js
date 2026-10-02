@@ -25,13 +25,14 @@ window.HEALTH_CHECK_CONFIG = {
     email: "info@blaiklock.uk.com",
   },
 
-  // Where the "deeper review" contact details are sent.
+  // Where the "deeper review" contact details are sent. Currently a Formspree
+  // form that emails info@blaiklock.uk.com.
   //   endpoint: a URL that accepts a JSON POST (Formspree, Zapier/Make webhook,
   //             Power Automate HTTP trigger, your CRM, etc.). The payload holds
   //             the contact details, every answer and every score.
   //   Leave endpoint empty to fall back to opening an email to `fallbackEmail`.
   submission: {
-    endpoint: "",
+    endpoint: "https://formspree.io/f/mzezlbpa",
     fallbackEmail: "info@blaiklock.uk.com",
   },
 

@@ -50,7 +50,9 @@ Scoring: each area is scored out of 8 (two questions, 1–4 points each). The ov
 
 ## Receiving the "deeper review" submissions
 
-Set `submission.endpoint` in `assets/config.js` to any URL that accepts a JSON `POST`, for example:
+Submissions currently go to the Formspree form `https://formspree.io/f/mzezlbpa`, which emails info@blaiklock.uk.com. Each email has the person's name, company and score in the subject. It lists their contact details, the area they want looked at, where their supply chain operates, their overall and per-area scores, and every answer. Replying to the email goes straight to the person who submitted it. Manage the form, spam settings and the destination address in the Formspree dashboard. The free plan allows 50 submissions a month.
+
+To send submissions somewhere else, set `submission.endpoint` in `assets/config.js` to any URL that accepts a JSON `POST`, for example:
 
 - [Formspree](https://formspree.io) (emails each submission to you)
 - a Zapier, Make or Power Automate webhook (forward to email, a CRM, a spreadsheet, etc.)
