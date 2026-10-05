@@ -1,5 +1,5 @@
 /*
- * Blaiklock Supply Chain Resilience Check — content & scoring configuration
+ * Blaiklock Supply Chain Resilience Check: content & scoring configuration
  * -------------------------------------------------------------------------
  * Everything a non-developer may want to change lives in this file:
  *   - brand details and contact info
@@ -77,7 +77,7 @@ window.HEALTH_CHECK_CONFIG = {
             { label: "Usually once our team or logistics provider flags it", score: 2 },
             { label: "Sometimes only after the delay has started affecting the operation", score: 1 },
           ],
-          improve: "Agree exception alerts with your logistics partner so a delay on a critical shipment is flagged the same day it happens — not once it has started affecting your operation.",
+          improve: "Agree exception alerts with your logistics partner so a delay on a critical shipment is flagged the same day it happens, not once it has started affecting your operation.",
         },
         {
           id: "q2",
@@ -117,7 +117,7 @@ window.HEALTH_CHECK_CONFIG = {
           ],
         },
         resilient: {
-          summary: "Visibility is a strength — you see issues early and act on them.",
+          summary: "Visibility is a strength. You see issues early and act on them.",
           actions: [
             "Use your tracking history to measure carrier and route reliability.",
             "Explore predictive ETAs and scenario planning for peak periods.",
@@ -142,7 +142,7 @@ window.HEALTH_CHECK_CONFIG = {
             { label: "We would rely on our logistics partner to find the best alternative", score: 2 },
             { label: "We would mainly respond once the disruption happened", score: 1 },
           ],
-          improve: "For each of your main routes, identify — and get quoted — at least one alternative route or mode now, so switching is a decision rather than a scramble.",
+          improve: "For each of your main routes, identify at least one alternative route or mode and get it quoted now, so switching is a decision rather than a scramble.",
         },
         {
           id: "q4",
@@ -153,7 +153,7 @@ window.HEALTH_CHECK_CONFIG = {
             { label: "Mainly when circumstances or market conditions change", score: 2 },
             { label: "We generally review alternatives only when a problem occurs", score: 1 },
           ],
-          improve: "Build a review of alternative routes and carriers into your regular planning — for example quarterly and before peak season — rather than waiting for a problem.",
+          improve: "Build a review of alternative routes and carriers into your regular planning (for example quarterly and before peak season) rather than waiting for a problem.",
         },
       ],
       advice: {
@@ -218,7 +218,7 @@ window.HEALTH_CHECK_CONFIG = {
             { label: "It can become unclear when shipments or requirements are more complex", score: 2 },
             { label: "We regularly experience uncertainty, delays or duplicated work", score: 1 },
           ],
-          improve: "Write down who owns each customs task — classification, documentation, declarations — between you, your suppliers and your forwarder, and have your commodity codes reviewed by a specialist.",
+          improve: "Write down who owns each customs task (classification, documentation, declarations) between you, your suppliers and your forwarder, and have your commodity codes reviewed by a specialist.",
         },
       ],
       advice: {
@@ -272,7 +272,7 @@ window.HEALTH_CHECK_CONFIG = {
             { label: "Quite heavily - some key movements rely on a limited number of options", score: 2 },
             { label: "Very heavily - changing route, provider or mode would be difficult", score: 1 },
           ],
-          improve: "Reduce reliance on a single route, carrier or mode for critical shipments by pre-agreeing a second option — for example sea-air, road vs short-sea, or an alternative port.",
+          improve: "Reduce reliance on a single route, carrier or mode for critical shipments by pre-agreeing a second option, for example sea-air, road vs short-sea, or an alternative port.",
         },
         {
           id: "q8",
@@ -337,7 +337,7 @@ window.HEALTH_CHECK_CONFIG = {
             { label: "It can take time to establish who is responsible", score: 2 },
             { label: "Ownership can become unclear between different teams or providers", score: 1 },
           ],
-          improve: "Agree who owns each type of issue — delays, customs holds, damages, claims — internally and with your providers, and write it down so nobody has to work it out mid-crisis.",
+          improve: "Agree who owns each type of issue (delays, customs holds, damages, claims) internally and with your providers, and write it down so nobody has to work it out mid-crisis.",
         },
         {
           id: "q10",
@@ -418,7 +418,7 @@ window.HEALTH_CHECK_CONFIG = {
       {
         id: "focus", label: "Which area would you most like us to look at?",
         // Options are the section names, plus this extra choice:
-        extraOption: "I'm not sure — I'd like Blaiklock to review the full result",
+        extraOption: "I'm not sure, I'd like Blaiklock to review the full result",
         optionsFromPillars: true,
       },
       {
@@ -430,7 +430,7 @@ window.HEALTH_CHECK_CONFIG = {
     marketingOptIn: "Keep me updated with occasional supply chain news and insights from Blaiklock. You can unsubscribe at any time.",
     privacyNote: "We'll only use your details to respond to your review request.",
     privacyLinkText: "Read our privacy notice",
-    thankYou: "Thanks{name} — a Blaiklock specialist will review your results and be in touch shortly.",
+    thankYou: "Thanks{name}! A Blaiklock specialist will review your results and be in touch shortly.",
     // Shown on the results page to people who chose "No thanks".
     ctaHeading: "Would you like a deeper review?",
     ctaText: "A Blaiklock specialist can go through your results with you, look at your actual shipments and trade lanes, and give you a practical plan to improve.",

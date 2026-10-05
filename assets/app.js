@@ -1,4 +1,4 @@
-/* Blaiklock Supply Chain Resilience Check — application logic.
+/* Blaiklock Supply Chain Resilience Check: application logic.
    Content lives in config.js; this file only handles flow, scoring and rendering. */
 (function () {
   "use strict";
@@ -169,11 +169,11 @@
     var view = h("section", { class: "intro enter" },
       h("div", { class: "intro__main" },
         h("span", { class: "eyebrow" }, "Free assessment"),
-        h("h1", null, C.brand.name + " – " + C.brand.title),
+        h("h1", null, C.brand.name + " " + C.brand.title),
         h("p", { class: "intro__tagline" }, C.brand.tagline),
         h("p", { class: "intro__lead" },
           "Find out how resilient your supply chain really is. You'll see your score across " + C.pillars.length +
-          " key areas, where you're strong, where you're exposed — and tailored advice on how to improve."),
+          " key areas, where you're strong, where you're exposed, and tailored advice on how to improve."),
         h("div", { class: "intro__actions" },
           resume
             ? [
@@ -238,7 +238,7 @@
         optionList(q.options.map(function (o) { return o.label; }), selected, choose, "q-title"),
         navRow({
           back: true,
-          hint: "Tip: press 1–" + q.options.length + " to answer",
+          hint: "Tip: press 1 to " + q.options.length + " to answer",
           next: { label: "Next →", disabled: selected === undefined, onclick: next },
         }))), "#q-title");
   }
@@ -491,7 +491,7 @@
       p.questions.forEach(function (q) {
         var opt = q.options[state.answers[q.id]];
         n++;
-        payload["Q" + n + " – " + p.name] = q.text + " → " + (opt ? opt.label + " (" + opt.score + (opt.score === 1 ? " pt)" : " pts)") : "");
+        payload["Q" + n + " (" + p.name + ")"] = q.text + " → " + (opt ? opt.label + " (" + opt.score + (opt.score === 1 ? " pt)" : " pts)") : "");
       });
     });
     payload["Submitted"] = new Date().toLocaleString("en-GB");
