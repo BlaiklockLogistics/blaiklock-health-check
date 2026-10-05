@@ -14,15 +14,15 @@ What the Supply Chain Resilience Check already does, and what Blaiklock still ne
 | **Transparency** | Privacy notice at `privacy.html`, linked from the footer and the Submit step. It names Blaiklock Limited (05161195) as controller and links to the main policy at blaiklock.uk.com/privacy-policy. |
 | **Lawful basis** | Responding to the review request: legitimate interests / steps before a contract. Newsletter: consent. |
 | **Newsletter consent (PECR)** | Separate, optional, **unticked** box naming the monthly newsletter. Submission emails show "Monthly newsletter: Yes - signed up" or "No". |
-| **Processors** | Formspree (DPA accepted) and Microsoft 365, both named in the privacy notice. |
+| **Processors** | Formspree (DPA accepted), Microsoft 365 and Mailchimp (newsletter), all named in the privacy notice. |
 | **Retention** | 24 months for review requests; Formspree submissions deleted within 30 days; newsletter list until unsubscribe. |
 | **Security** | Served over HTTPS (GitHub Pages) and submitted over HTTPS to Formspree. |
 
 ## Still to do
 
 - [ ] **ICO registration.** No entry was found for Blaiklock on the ICO register. Most UK businesses that handle personal data must pay the annual data protection fee. Check by searching the company number (05161195) as well as the name, and if there's no entry, use the ICO's self-assessment at ico.org.uk/for-organisations/data-protection-fee and register. Then add the registration number to `privacy.html` under "Who we are".
-- [ ] **Newsletter tool.** If the newsletter is sent from a mailing platform (e.g. Mailchimp) rather than straight from Microsoft 365, add it to "Who we share it with" in `privacy.html`.
-- [ ] **Newsletter list.** Only add people whose submission says "Monthly newsletter: Yes - signed up", and include an unsubscribe link in every newsletter.
+- [ ] **Mailchimp data processing agreement.** Mailchimp's DPA is part of its standard terms. Check it applies to your account (Account → Settings, or Mailchimp's legal pages), as the privacy notice says one is in place.
+- [ ] **Newsletter list.** Only add people to Mailchimp whose submission says "Monthly newsletter: Yes - signed up". When adding them, note the source (e.g. a "Resilience Check" tag) and date so you can show when and how they signed up. Mailchimp adds an unsubscribe link to every newsletter automatically; don't remove it.
 - [ ] **Formspree clean-up.** Delete submissions from the Formspree dashboard within 30 days of them reaching the inbox, as the privacy notice promises.
 - [ ] **24-month clean-up.** Delete review requests from Microsoft 365 that are more than 24 months past last contact (unless they became customers).
 - [ ] **Main privacy policy.** Check that blaiklock.uk.com/privacy-policy is consistent with this notice (e.g. company name and contact email).
