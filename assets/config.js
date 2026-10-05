@@ -427,8 +427,8 @@ window.HEALTH_CHECK_CONFIG = {
       },
     ],
     // Shown on the last contact step. The opt-in box is optional and unticked by default.
-    marketingOptIn: "Keep me updated with occasional supply chain news and insights from Blaiklock. You can unsubscribe at any time.",
-    privacyNote: "We'll only use your details to respond to your review request.",
+    marketingOptIn: "Sign me up to Blaiklock's monthly newsletter. You can unsubscribe at any time.",
+    privacyNote: "We'll use your details to respond to your review request, and only send the newsletter if you've ticked the box.",
     privacyLinkText: "Read our privacy notice",
     thankYou: "Thanks{name}! A Blaiklock specialist will review your results and be in touch shortly.",
     // Shown on the results page to people who chose "No thanks".

@@ -441,7 +441,6 @@ button, input, select, textarea { font: inherit; color: inherit; }
 .doc ul { padding-left: 20px; }
 .doc li { margin-bottom: 6px; }
 .doc .updated { color: var(--ink-3); font-size: 14px; }
-.doc .todo { background: #fff3c4; color: #5a4300; border-radius: 4px; padding: 0 4px; font-weight: 600; }
 .doc a { color: var(--ink); font-weight: 600; }
 
 /* ---------- Responsive ---------- */

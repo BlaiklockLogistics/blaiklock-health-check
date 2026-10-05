@@ -480,7 +480,7 @@
       "Phone": contact.phone || "",
       "Area to look at": contactChoice("focus"),
       "Supply chain operates": contactChoice("region"),
-      "Marketing emails": contact.marketing ? "Yes - opted in" : "No",
+      "Monthly newsletter": contact.marketing ? "Yes - signed up" : "No",
       "Overall score": results.overall + "/100 (" + results.level.label + ")",
     };
     results.pillars.forEach(function (r) {

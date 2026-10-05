@@ -29,7 +29,7 @@ It's a static site (HTML, CSS and JavaScript only), so there's no build step and
 | `assets/img/blaiklock-logo.png` | The "B" mark used in the header and browser tab |
 | `assets/img/blaiklock-logo-full.jpg` | Full logo with wordmark, shown at the top of the printed / PDF report |
 | `assets/fonts/` | Self-hosted Montserrat font and its licence |
-| `privacy.html` | Privacy notice. Fill in the highlighted gaps before going live |
+| `privacy.html` | Privacy notice for the check. Links to the main policy at blaiklock.uk.com/privacy-policy |
 | `GDPR-CHECKLIST.md` | What's built in for data protection, and what Blaiklock needs to confirm |
 
 ## Run it locally

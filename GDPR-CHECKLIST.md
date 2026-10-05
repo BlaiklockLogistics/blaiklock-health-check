@@ -1,6 +1,6 @@
 # GDPR / UK data protection checklist
 
-What the Supply Chain Resilience Check already does, and what Blaiklock needs to confirm or do before going live. This is a practical checklist, not legal advice. Have whoever handles data protection at Blaiklock sign it off.
+What the Supply Chain Resilience Check already does, and what Blaiklock still needs to do. This is a practical checklist, not legal advice. Have whoever handles data protection at Blaiklock sign it off.
 
 ## Built into the site
 
@@ -8,20 +8,22 @@ What the Supply Chain Resilience Check already does, and what Blaiklock needs to
 |---|---|
 | **Answers stay private by default** | Scores are calculated in the visitor's browser. Nothing is sent to Blaiklock unless they choose "Yes" to a deeper review and press Submit. |
 | **No cookies or tracking** | No cookies, analytics, tracking pixels or third-party scripts, so no cookie banner is needed (PECR). |
-| **No third-party requests on page load** | Montserrat is self-hosted (`assets/fonts/`) instead of loaded from Google Fonts, which transfers visitors' IP addresses to Google; a German court ruled that a GDPR breach in 2022. Tested: the page makes no outside requests until Submit. |
+| **No third-party requests on page load** | Montserrat is self-hosted (`assets/fonts/`) instead of loaded from Google Fonts, which would send visitors' IP addresses to Google. Tested: the page makes no outside requests until Submit. |
 | **Browser storage** | Quiz progress is kept in *session* storage (cleared when the tab closes) so a refresh doesn't lose answers. That's strictly necessary for the service the visitor asked for, so no consent is needed. Contact details are never stored in the browser. |
-| **Data minimisation** | Only name, company, email, optional phone, area of interest and region are collected. Phone is optional. |
-| **Transparency** | Privacy notice at `privacy.html`, linked from the footer and from the Submit step. |
-| **Lawful basis** | Responding to the review request: legitimate interests / steps at the person's request before a contract. Marketing: consent. |
-| **Marketing consent (PECR)** | Separate, optional, **unticked** tick box. The submission email shows "Marketing emails: Yes - opted in" or "No". Only email people marketing if it says Yes. |
+| **Data minimisation** | Only name, company, email, optional phone, area of interest and region are collected. |
+| **Transparency** | Privacy notice at `privacy.html`, linked from the footer and the Submit step. It names Blaiklock Limited (05161195) as controller and links to the main policy at blaiklock.uk.com/privacy-policy. |
+| **Lawful basis** | Responding to the review request: legitimate interests / steps before a contract. Newsletter: consent. |
+| **Newsletter consent (PECR)** | Separate, optional, **unticked** box naming the monthly newsletter. Submission emails show "Monthly newsletter: Yes - signed up" or "No". |
+| **Processors** | Formspree (DPA accepted) and Microsoft 365, both named in the privacy notice. |
+| **Retention** | 24 months for review requests; Formspree submissions deleted within 30 days; newsletter list until unsubscribe. |
 | **Security** | Served over HTTPS (GitHub Pages) and submitted over HTTPS to Formspree. |
 
-## Blaiklock to confirm or do
+## Still to do
 
-- [ ] **Fill in the highlighted gaps in `privacy.html`**: legal entity name, company number, registered address, ICO registration number, email provider, and retention periods. Or point `brand.privacyUrl` in `assets/config.js` at Blaiklock's existing website privacy policy, if that policy covers this tool.
-- [ ] **ICO registration**: check Blaiklock has paid the ICO data protection fee (most UK businesses that handle personal data must). Search the register at ico.org.uk.
-- [ ] **Formspree data processing agreement**: Formspree stores submissions in the USA. Accept or download Formspree's DPA, and confirm which UK transfer safeguard applies (UK Extension to the EU–US Data Privacy Framework, or the UK International Data Transfer Addendum). Update the "Who we share it with" section to match.
-- [ ] **Retention**: decide how long review requests are kept (e.g. 24 months after last contact). Delete submissions from the Formspree dashboard regularly once they've reached your inbox or CRM.
-- [ ] **Record of processing**: add "Supply Chain Resilience Check enquiries" to Blaiklock's record of processing activities, if you keep one.
-- [ ] **Marketing list**: only add people who ticked the box. Include an unsubscribe link in every marketing email.
-- [ ] **Subject access and deletion**: make sure whoever monitors info@blaiklock.uk.com knows to pass on data requests (one-month deadline).
+- [ ] **ICO registration.** No entry was found for Blaiklock on the ICO register. Most UK businesses that handle personal data must pay the annual data protection fee. Check by searching the company number (05161195) as well as the name, and if there's no entry, use the ICO's self-assessment at ico.org.uk/for-organisations/data-protection-fee and register. Then add the registration number to `privacy.html` under "Who we are".
+- [ ] **Newsletter tool.** If the newsletter is sent from a mailing platform (e.g. Mailchimp) rather than straight from Microsoft 365, add it to "Who we share it with" in `privacy.html`.
+- [ ] **Newsletter list.** Only add people whose submission says "Monthly newsletter: Yes - signed up", and include an unsubscribe link in every newsletter.
+- [ ] **Formspree clean-up.** Delete submissions from the Formspree dashboard within 30 days of them reaching the inbox, as the privacy notice promises.
+- [ ] **24-month clean-up.** Delete review requests from Microsoft 365 that are more than 24 months past last contact (unless they became customers).
+- [ ] **Main privacy policy.** Check that blaiklock.uk.com/privacy-policy is consistent with this notice (e.g. company name and contact email).
+- [ ] **Data requests.** Make sure whoever monitors info@blaiklock.uk.com knows to pass on data requests (one-month deadline).
